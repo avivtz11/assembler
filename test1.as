@@ -1,6 +1,6 @@
 ;file test1.as
 ;sample source code
-
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 .entry  Next
 .extern wNumber
 STR:    .asciz "aBcd"
