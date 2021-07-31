@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "first_pass.h"
+
 void assembler(char *assembly_file_path);
 int check_file_ext(char *file_path, char *desired_ext);
-
-#define MAX_LINE 82
 
 
 int main(int argc, char *argv[])
@@ -26,8 +26,6 @@ int main(int argc, char *argv[])
 void assembler(char *assembly_file_path) /*TODO tests for file errors, line lengths*/
 {
 	FILE *assembly_fp;
-	char line[MAX_LINE];
-	int line_num;
 
 	if (!check_file_ext(assembly_file_path, ".as"))
 	{
@@ -42,12 +40,7 @@ void assembler(char *assembly_file_path) /*TODO tests for file errors, line leng
 		return;
 	}
 
-	line_num = 1;
-	while(fgets(line, sizeof(line), assembly_fp)) /*TODO maybe error if more than MAX_LINE?*/
-	{
-		printf("%d : %s\n", line_num, line);
-		line_num++;
-	}
+	first_pass(assembly_fp);
 
 	fclose(assembly_fp);
 }
