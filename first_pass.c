@@ -21,14 +21,14 @@ void first_pass(FILE *assembly_fp)
 	{
 		does_line_define_symbol = 0;
 		current_word = get_next_word(line);
-		if((*current_word != '\n') && (*current_word != ';'))
+		if((*current_word != '\n') && (*current_word != ';')) /*comment or empty*/
 		{
-			if(*(current_word + strlen(current_word) - 1) == ':')
+			if(*(current_word + strlen(current_word) - 1) == ':') /*has symbol*/
 			{
 				does_line_define_symbol = 1;
 			}
 
-			if((strcmp(current_word, ".dh") == 0) || (strcmp(current_word, ".dw") == 0) || (strcmp(current_word, ".db") == 0) || (strcmp(current_word, ".asciz") == 0))
+			if((strcmp(current_word, ".dh") == 0) || (strcmp(current_word, ".dw") == 0) || (strcmp(current_word, ".db") == 0) || (strcmp(current_word, ".asciz") == 0)) /*is data storage line*/
 			{
 				
 			}
