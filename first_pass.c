@@ -21,7 +21,7 @@ void first_pass(FILE *assembly_fp)
 	{
 		does_line_define_symbol = 0;
 		current_word = get_next_word(line);
-		if((*current_word != '\n') && (*current_word != ';')) /*comment or empty*/
+		if((*current_word != '\n') && (*current_word != ';')) /*not comment or empty*/
 		{
 			if(*(current_word + strlen(current_word) - 1) == ':') /*has symbol*/
 			{
@@ -30,8 +30,10 @@ void first_pass(FILE *assembly_fp)
 
 			if((strcmp(current_word, ".dh") == 0) || (strcmp(current_word, ".dw") == 0) || (strcmp(current_word, ".db") == 0) || (strcmp(current_word, ".asciz") == 0)) /*is data storage line*/
 			{
-				
+				/*TODO insert to symbol table, and put data in data section 7-8*/
 			}
+
+			
 		}
 		free(current_word); /*TODO maybe change this to array*/
 	}
