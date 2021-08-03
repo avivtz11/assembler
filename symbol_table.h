@@ -13,4 +13,4 @@ typedef struct SymbolTable{
 
 
 SymbolTable *make_symbol_table();
-void add_symbol(SymbolTable symbol_table, char *symbol, int value, char *attributes);
+void add_symbol(SymbolTable *symbol_table, char *symbol, int value, char *attributes);
