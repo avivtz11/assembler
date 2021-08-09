@@ -4,7 +4,7 @@
 
 #define MAX_LINE 82
 
-char *get_next_word(char **line);
+char *get_next_word(char **line)
 
 
 void first_pass(FILE *assembly_fp)
