@@ -3,6 +3,7 @@
 #include <string.h>
 
 SymbolNode *make_symbol_node(SymbolNode *next, char *symbol, int value, char *attributes);
+int is_symbol_name_taken(SymbolTable *symbol_table, char *symbol);
 
 SymbolTable *make_symbol_table()
 {
@@ -13,11 +14,30 @@ SymbolTable *make_symbol_table()
 }
 
 
-void add_symbol(SymbolTable *symbol_table, char *symbol, int value, char *attributes)
+int add_symbol(SymbolTable *symbol_table, char *symbol, int value, char *attributes)
 {
-	SymbolNode *temp = make_symbol_node(symbol_table->first, symbol, value, attributes);
+	SymbolNode *temp;
+	if(is_symbol_name_taken(symbol_table, symbol))
+		return 1;
+
+	temp = make_symbol_node(symbol_table->first, symbol, value, attributes);
 
 	symbol_table->first = temp;
+
+	return 0;
+}
+
+int is_symbol_name_taken(SymbolTable *symbol_table, char *symbol)
+{
+	SymbolNode *symbol_node;
+
+	symbol_node = symbol_table->first;
+	while((symbol_node = symbol_node->next))
+	{
+		if(strcmp(symbol_node->symbol, symbol) == 0)
+			return 1;
+	}
+	return 0;
 }
 
 

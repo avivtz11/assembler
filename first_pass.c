@@ -1,12 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "symbol_table.h"
 
 #define MAX_LINE 82
 
 char *get_next_word(char **line);
+int is_symbol_name_valid(char *symbol_name);
+int is_reserved_word(char *word);
 
 
 void first_pass(FILE *assembly_fp)
@@ -46,21 +49,31 @@ void first_pass(FILE *assembly_fp)
 				{
 					if(does_line_define_symbol)
 					{
-						add_symbol(symbol_table, symbol_name, dc, "data");/*TODO add symbol validation*/
+						if(!is_symbol_name_valid(symbol_name))
+							printf("line %d: symbol name is invalid, not adding it", line_num);
+						else if(add_symbol(symbol_table, symbol_name, dc, "data") == 1)
+							printf("line %d: symbol name already exists, not adding again", line_num);
 					}
 					/*TODO code the values and insert to data segment*/
 				}
 
 				if(strcmp(current_word, ".extern") == 0)
 				{
-					add_symbol(symbol_table, get_next_word(&line_ptr), 0, "external");/*TODO add symbol validation*/
+					current_word = get_next_word(&line_ptr);
+					if(!is_symbol_name_valid(current_word))
+						printf("line %d: symbol name is invalid, not adding it", line_num);
+					else if(add_symbol(symbol_table, current_word, 0, "external") == 1)
+						printf("line %d: symbol already exists", line_num);
 				}
 				if((strcmp(current_word, ".extern") != 0) && (strcmp(current_word, ".entry") != 0)) /*entry saved for second pass*/
 				{
 					/*command*/
 					if(does_line_define_symbol)
 					{
-						add_symbol(symbol_table, symbol_name, ic, "code");/*TODO add symbol validation*/
+						if(!is_symbol_name_valid(symbol_name))
+							printf("line %d: symbol name is invalid, not adding it", line_num);
+						else if(add_symbol(symbol_table, symbol_name, ic, "code") == 1)
+							printf("line %d: symbol already exists", line_num);
 					}
 					/*TODO code the command*/
 					ic += 4;
@@ -74,6 +87,101 @@ void first_pass(FILE *assembly_fp)
 	}
 }
 
+
+int is_symbol_name_valid(char *symbol_name)
+{
+	char *current_char = symbol_name;
+
+	if(isalpha(*current_char) == 0)/*first symbol char must be alphabetic*/
+		return 0;
+
+	while(*(current_char++) != '\0')/*all chars must be alphanumeric*/
+	{
+		if(isalnum(*current_char) == 0)
+			return 0;
+	}
+
+	if(strlen(symbol_name) > 31)
+		return 0;
+
+	if(is_reserved_word(symbol_name))
+		return 0;
+
+	return 1;
+}
+
+int is_reserved_word(char *word)
+{
+	if(!strcmp(word, "add") == 0)
+		return 1;
+	else if(!strcmp(word, "sub") == 0)
+		return 1;
+	else if(!strcmp(word, "and") == 0)
+		return 1;
+	else if(!strcmp(word, "or") == 0)
+		return 1;
+	else if(!strcmp(word, "nor") == 0)
+		return 1;
+	else if(!strcmp(word, "move") == 0)
+		return 1;
+	else if(!strcmp(word, "mvhi") == 0)
+		return 1;
+	else if(!strcmp(word, "mvlo") == 0)
+		return 1;
+	else if(!strcmp(word, "addi") == 0)
+		return 1;
+	else if(!strcmp(word, "subi") == 0)
+		return 1;
+	else if(!strcmp(word, "andi") == 0)
+		return 1;
+	else if(!strcmp(word, "ori") == 0)
+		return 1;
+	else if(!strcmp(word, "nori") == 0)
+		return 1;
+	else if(!strcmp(word, "bne") == 0)
+		return 1;
+	else if(!strcmp(word, "beq") == 0)
+		return 1;
+	else if(!strcmp(word, "blt") == 0)
+		return 1;
+	else if(!strcmp(word, "bgt") == 0)
+		return 1;
+	else if(!strcmp(word, "lb") == 0)
+		return 1;
+	else if(!strcmp(word, "sb") == 0)
+		return 1;
+	else if(!strcmp(word, "lw") == 0)
+		return 1;
+	else if(!strcmp(word, "sw") == 0)
+		return 1;
+	else if(!strcmp(word, "lh") == 0)
+		return 1;
+	else if(!strcmp(word, "sh") == 0)
+		return 1;
+	else if(!strcmp(word, "jmp") == 0)
+		return 1;
+	else if(!strcmp(word, "la") == 0)
+		return 1;
+	else if(!strcmp(word, "call") == 0)
+		return 1;
+	else if(!strcmp(word, "stop") == 0)
+		return 1;
+
+	else if(!strcmp(word, "db") == 0)
+		return 1;
+	else if(!strcmp(word, "dw") == 0)
+		return 1;
+	else if(!strcmp(word, "dh") == 0)
+		return 1;
+	else if(!strcmp(word, "asciz") == 0)
+		return 1;
+	else if(!strcmp(word, "entry") == 0)
+		return 1;
+	else if(!strcmp(word, "extern") == 0)
+		return 1;
+
+	return 0;
+}
 
 char *get_next_word(char **current_char)
 {
