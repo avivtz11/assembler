@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "symbol_table.h"
+
 #define MAX_LINE 82
 
 char *get_next_word(char **line);
@@ -15,9 +17,11 @@ void first_pass(FILE *assembly_fp)
 	char *line_ptr;
 	int does_line_define_symbol;
 	char *symbol_name;
+	SymbolTable *symbol_table;
 	int ic = 100;
 	int dc = 0;
 
+	symbol_table = make_symbol_table();
 	line_num = 1;
 	while(fgets(line, sizeof(line), assembly_fp)) /*TODO maybe error if more than MAX_LINE?*/
 	{
@@ -33,7 +37,8 @@ void first_pass(FILE *assembly_fp)
 				{
 					does_line_define_symbol = 1;
 					symbol_name = current_word;
-					current_word = get_next_word(line_ptr);
+					symbol_name[strlen(symbol_name) - 1] = '\0';
+					current_word = get_next_word(&line_ptr);
 					line_ptr += strlen(current_word);
 				}
 
@@ -41,31 +46,31 @@ void first_pass(FILE *assembly_fp)
 				{
 					if(does_line_define_symbol)
 					{
-						/*TODO insert to symbol table as data*/
+						add_symbol(symbol_table, symbol_name, dc, "data");/*TODO add symbol validation*/
 					}
 					/*TODO code the values and insert to data segment*/
 				}
 
 				if(strcmp(current_word, ".extern") == 0)
 				{
-					/*TODO insert parameter symbol to symbol table as external symbol*/
+					add_symbol(symbol_table, get_next_word(&line_ptr), 0, "external");/*TODO add symbol validation*/
 				}
 				if((strcmp(current_word, ".extern") != 0) && (strcmp(current_word, ".entry") != 0)) /*entry saved for second pass*/
 				{
 					/*command*/
 					if(does_line_define_symbol)
 					{
-						/*TODO insert to symbol table as code*/
+						add_symbol(symbol_table, symbol_name, ic, "code");/*TODO add symbol validation*/
 					}
 					/*TODO code the command*/
 					ic += 4;
-				}
-			
+				}			
 			}
 			if(symbol_name)
 				free(symbol_name);
 			free(current_word); /*TODO maybe change this to array*/
 		}
+		line_num++;
 	}
 }
 
