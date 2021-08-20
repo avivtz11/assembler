@@ -14,6 +14,7 @@ void first_pass(FILE *assembly_fp)
 	char *current_word;
 	char *line_ptr;
 	int does_line_define_symbol;
+	char *symbol_name;
 	int ic = 100;
 	int dc = 0;
 
@@ -31,17 +32,38 @@ void first_pass(FILE *assembly_fp)
 				if(*(current_word + strlen(current_word) - 1) == ':') /*has symbol*/
 				{
 					does_line_define_symbol = 1;
+					symbol_name = current_word;
 					current_word = get_next_word(line_ptr);
 					line_ptr += strlen(current_word);
 				}
 
 				if((strcmp(current_word, ".dh") == 0) || (strcmp(current_word, ".dw") == 0) || (strcmp(current_word, ".db") == 0) || (strcmp(current_word, ".asciz") == 0)) /*is data storage line*/
 				{
-					/*TODO insert to symbol table, and put data in data section 7-8*/
+					if(does_line_define_symbol)
+					{
+						/*TODO insert to symbol table as data*/
+					}
+					/*TODO code the values and insert to data segment*/
 				}
 
+				if(strcmp(current_word, ".extern") == 0)
+				{
+					/*TODO insert parameter symbol to symbol table as external symbol*/
+				}
+				if((strcmp(current_word, ".extern") != 0) && (strcmp(current_word, ".entry") != 0)) /*entry saved for second pass*/
+				{
+					/*command*/
+					if(does_line_define_symbol)
+					{
+						/*TODO insert to symbol table as code*/
+					}
+					/*TODO code the command*/
+					ic += 4;
+				}
 			
 			}
+			if(symbol_name)
+				free(symbol_name);
 			free(current_word); /*TODO maybe change this to array*/
 		}
 	}
