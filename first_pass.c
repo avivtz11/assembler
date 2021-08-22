@@ -115,6 +115,8 @@ void data_line_error(int err_code, int line_num)
 		case -4:
 			err_message = "line %d: data param is not of valid size";
 			break;
+		default:
+			err_message = "line %d: unknown error";
 	}
 	printf(err_message, line_num);
 }
