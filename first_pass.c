@@ -4,6 +4,8 @@
 #include <ctype.h>
 
 #include "symbol_table.h"
+#include "parsers.h"
+#include "utils.h"
 
 #define MAX_LINE 82
 
@@ -19,6 +21,7 @@ void first_pass(FILE *assembly_fp)
 	char *current_word;
 	char *line_ptr;
 	int does_line_define_symbol;
+	int data_line_length;
 	char *symbol_name;
 	SymbolTable *symbol_table;
 	int ic = 100;
@@ -54,10 +57,16 @@ void first_pass(FILE *assembly_fp)
 						else if(add_symbol(symbol_table, symbol_name, dc, "data") == 1)
 							printf("line %d: symbol name already exists, not adding again", line_num);
 					}
-					/*TODO code the values and insert to data segment*/
+					data_line_length = count_data_length(current_word, &line_ptr);
+					if(data_line_length < 0)
+					{
+						data_line_error(data_line_length, line_num);
+						data_line_length = 0;  /*won't go to second pass so 0 is okay*/
+					}
+					dc += data_line_length;
 				}
 
-				if(strcmp(current_word, ".extern") == 0)
+				else if(strcmp(current_word, ".extern") == 0)
 				{
 					current_word = get_next_word(&line_ptr);
 					if(!is_symbol_name_valid(current_word))
@@ -65,7 +74,8 @@ void first_pass(FILE *assembly_fp)
 					else if(add_symbol(symbol_table, current_word, 0, "external") == 1)
 						printf("line %d: symbol already exists", line_num);
 				}
-				if((strcmp(current_word, ".extern") != 0) && (strcmp(current_word, ".entry") != 0)) /*entry saved for second pass*/
+
+				else if(strcmp(current_word, ".entry") != 0) /*entry saved for second pass*/
 				{
 					/*command*/
 					if(does_line_define_symbol)
@@ -75,16 +85,38 @@ void first_pass(FILE *assembly_fp)
 						else if(add_symbol(symbol_table, symbol_name, ic, "code") == 1)
 							printf("line %d: symbol already exists", line_num);
 					}
-					/*TODO code the command*/
 					ic += 4;
 				}			
 			}
 			if(symbol_name)
 				free(symbol_name);
-			free(current_word); /*TODO maybe change this to array*/
+			free(current_word);
 		}
 		line_num++;
 	}
+}
+
+
+void data_line_error(int err_code, int line_num)
+{
+	char *err_message;
+
+	switch(err_code)
+	{
+		case -1:
+			err_message = "line %d: redundant comma between params";
+			break;
+		case -2:
+			err_message = "line %d: missing comma between params";
+			break;
+		case -3:
+			err_message = "line %d: data param is not a valid number";
+			break;
+		case -4:
+			err_message = "line %d: data param is not of valid size";
+			break;
+	}
+	printf(err_message, line_num);
 }
 
 
@@ -189,13 +221,10 @@ char *get_next_word(char **current_char)
 	int result_word_length;
 	char *first_word_char;
 
-	while((**current_char == ' ') || (**current_char == '\t')) /*skipping prefix whitespace*/
-	{
-		(*current_char)++;
-	}
+	skip_white_space(current_char);
 	first_word_char = *current_char;
 
-	while((**current_char != ' ') && (**current_char != '\t') && (**current_char != '\n')) /*TODO check this*/
+	while((**current_char != ' ') && (**current_char != '\t') && (**current_char != '\n'))
 	{
 		(*current_char)++;
 	}

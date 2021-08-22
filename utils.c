@@ -12,3 +12,11 @@ void *malloc_with_error(int allocation_size, char *error_message)
 	}
 	return temp;
 }
+
+void skip_white_space(char **str)
+{
+	while((**str == ' ') || (**str == '\t'))
+	{
+		(*str)++;
+	}
+}
