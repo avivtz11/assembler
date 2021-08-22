@@ -12,23 +12,24 @@
 char *get_next_word(char **line);
 int is_symbol_name_valid(char *symbol_name);
 int is_reserved_word(char *word);
+void data_line_error(int err_code, int line_num);
 
 
-void first_pass(FILE *assembly_fp)
+int first_pass(FILE *assembly_fp, SymbolTable *symbol_table, int *ic_ref, int *dc_ref)
 {
 	char line[MAX_LINE];
 	int line_num;
 	char *current_word;
 	char *line_ptr;
+	int err_flag;
 	int does_line_define_symbol;
 	int data_line_length;
-	char *symbol_name;
-	SymbolTable *symbol_table;
+	char *symbol_name;	
 	int ic = 100;
 	int dc = 0;
 
-	symbol_table = make_symbol_table();
 	line_num = 1;
+	err_flag = 0;
 	while(fgets(line, sizeof(line), assembly_fp)) /*TODO maybe error if more than MAX_LINE?*/
 	{
 		line_ptr = line;
@@ -53,13 +54,20 @@ void first_pass(FILE *assembly_fp)
 					if(does_line_define_symbol)
 					{
 						if(!is_symbol_name_valid(symbol_name))
+						{
+							err_flag = 1;
 							printf("line %d: symbol name is invalid, not adding it", line_num);
+						}
 						else if(add_symbol(symbol_table, symbol_name, dc, "data") == 1)
+						{
+							err_flag = 1;
 							printf("line %d: symbol name already exists, not adding again", line_num);
+						}
 					}
 					data_line_length = count_data_length(current_word, &line_ptr);
 					if(data_line_length < 0)
 					{
+						err_flag = 1;
 						data_line_error(data_line_length, line_num);
 						data_line_length = 0;  /*won't go to second pass so 0 is okay*/
 					}
@@ -70,9 +78,15 @@ void first_pass(FILE *assembly_fp)
 				{
 					current_word = get_next_word(&line_ptr);
 					if(!is_symbol_name_valid(current_word))
+					{
+						err_flag = 1;
 						printf("line %d: symbol name is invalid, not adding it", line_num);
+					}
 					else if(add_symbol(symbol_table, current_word, 0, "external") == 1)
+					{
+						err_flag = 1;
 						printf("line %d: symbol already exists", line_num);
+					}
 				}
 
 				else if(strcmp(current_word, ".entry") != 0) /*entry saved for second pass*/
@@ -81,9 +95,15 @@ void first_pass(FILE *assembly_fp)
 					if(does_line_define_symbol)
 					{
 						if(!is_symbol_name_valid(symbol_name))
+						{
+							err_flag = 1;
 							printf("line %d: symbol name is invalid, not adding it", line_num);
+						}
 						else if(add_symbol(symbol_table, symbol_name, ic, "code") == 1)
+						{
+							err_flag = 1;
 							printf("line %d: symbol already exists", line_num);
+						}
 					}
 					ic += 4;
 				}			
@@ -94,6 +114,10 @@ void first_pass(FILE *assembly_fp)
 		}
 		line_num++;
 	}
+
+	*ic_ref = ic;
+	*dc_ref = dc;
+	return err_flag;
 }
 
 

@@ -5,6 +5,7 @@
 
 void assembler(char *assembly_file_path);
 int check_file_ext(char *file_path, char *desired_ext);
+void second_pass_prep(SymbolTable *symbol_table, int ic, int dc);
 
 
 int main(int argc, char *argv[])
@@ -23,9 +24,13 @@ int main(int argc, char *argv[])
 }
 
 
-void assembler(char *assembly_file_path) /*TODO tests for file errors, line lengths*/
+void assembler(char *assembly_file_path)
 {
 	FILE *assembly_fp;
+	SymbolTable *symbol_table;
+	int pass_err_flag;
+	int dc;
+	int ic;
 
 	if (!check_file_ext(assembly_file_path, ".as"))
 	{
@@ -40,9 +45,20 @@ void assembler(char *assembly_file_path) /*TODO tests for file errors, line leng
 		return;
 	}
 
-	first_pass(assembly_fp);
+	symbol_table = make_symbol_table();
+	pass_err_flag = first_pass(assembly_fp, symbol_table, &ic, &dc);
+	if(pass_err_flag == 1)
+		return;
+
+	second_pass_prep(symbol_table, ic, dc);
 
 	fclose(assembly_fp);
+}
+
+
+void second_pass_prep(SymbolTable *symbol_table, int ic, int dc)
+{
+
 }
 
 

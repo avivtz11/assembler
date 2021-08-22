@@ -1,10 +1,11 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "utils.h"
 
 #define is_byte_size(X) ((-128 <= (X)) && ((X) <= 127))
 #define is_half_word_size(X) ((-32768 <= (X)) && ((X) <= 32767))
-#define is_word_size(X) ((-2147483648 <= (X)) && ((X) <= 2147483647))
+#define is_word_size(X) (((-2147483647L - 1) <= (X)) && ((X) <= 2147483647L))
 
 int get_next_param(char **params, char **result_param);
 
@@ -18,7 +19,7 @@ int count_data_length(char *data_command, char **params)
 	int params_counter;
 
 	params_counter = 0;
-	while((*params) != '\n')
+	while((**params) != '\n')
 	{
 		param_err_code = get_next_param(params, &current_param);
 		if(param_err_code != 0)
@@ -29,11 +30,11 @@ int count_data_length(char *data_command, char **params)
 		if(!*current_param_iterator)
 			return -3;
 
-		if(data_command == ".db" && !is_byte_size(current_param_value))
+		if((strcmp(data_command, ".db") == 0) && !is_byte_size(current_param_value))
 			return -4;
-		if(data_command == ".dh" && !is_half_word_size(current_param_value))
+		if((strcmp(data_command, ".dh") == 0) && !is_half_word_size(current_param_value))
 			return -4;
-		if(data_command == ".dw" && !is_word_size(current_param_value))
+		if((strcmp(data_command, ".dw") == 0) && !is_word_size(current_param_value))
 			return -4;
 
 		params_counter++;
@@ -43,6 +44,7 @@ int count_data_length(char *data_command, char **params)
 
 int get_next_param(char **params, char **result_param)
 {
+	int result_param_length;
 	char *param_first_char;
 	skip_white_space(params);
 
