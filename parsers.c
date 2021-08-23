@@ -9,6 +9,7 @@
 
 int get_next_param(char **params, char **result_param);
 int size_of_single_number(char *data_command);
+int count_asciz_data_length(char **params);
 
 
 int count_data_length(char *data_command, char **params)
@@ -18,6 +19,9 @@ int count_data_length(char *data_command, char **params)
 	char *current_param_iterator;
 	long int current_param_value;
 	int params_counter;
+
+	if(strcmp(data_command, ".asciz") == 0)
+		return count_asciz_data_length(params);
 
 	params_counter = 0;
 	while((**params) != '\n')
@@ -43,11 +47,31 @@ int count_data_length(char *data_command, char **params)
 	return params_counter * size_of_single_number(data_command);
 }
 
+
+int count_asciz_data_length(char **params)
+{
+	int param_err_code;
+	char *current_param;
+
+	param_err_code = get_next_param(params, &current_param);
+	if(param_err_code != 0)
+		return param_err_code;
+
+	if((**params) != '\n')
+		return -5;
+
+	if(((*current_param) != '"') || ((*(current_param + strlen(current_param) - 1)) != '"'))
+		return -6;
+
+	return strlen(current_param) + 1;
+}
+
+
 int size_of_single_number(char *data_command)
 {
 	if(strcmp(data_command, ".db") == 0)
 		return 1;
-	else if(strcmp(data_command, ".dh") == 0
+	else if(strcmp(data_command, ".dh") == 0)
 		return 2;
 	else /*can't be anything else at this point*/
 		return 4;
