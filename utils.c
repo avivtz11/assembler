@@ -8,7 +8,7 @@ void *malloc_with_error(int allocation_size, char *error_message)
 	if (!(temp = malloc(allocation_size)))
 	{
 		fprintf(stderr, "%s", error_message);
-		exit(1);
+		exit(1); /*TODO maybe not exit straight away for sake of cleanup*/
 	}
 	return temp;
 }

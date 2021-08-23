@@ -2,10 +2,11 @@
 #include <string.h>
 
 #include "first_pass.h"
+#include "utils.h"
 
 void assembler(char *assembly_file_path);
 int check_file_ext(char *file_path, char *desired_ext);
-void second_pass_prep(SymbolTable *symbol_table, int ic, int dc);
+char *second_pass_prep(SymbolTable *symbol_table, int ic, int dc);
 
 
 int main(int argc, char *argv[])
@@ -28,6 +29,7 @@ void assembler(char *assembly_file_path)
 {
 	FILE *assembly_fp;
 	SymbolTable *symbol_table;
+	char *data_segment;
 	int pass_err_flag;
 	int dc;
 	int ic;
@@ -50,16 +52,20 @@ void assembler(char *assembly_file_path)
 	if(pass_err_flag == 1)
 		return;
 
-	second_pass_prep(symbol_table, ic, dc);
+	data_segment = second_pass_prep(symbol_table, ic, dc);
 
 	fclose(assembly_fp);
 }
 
 
-void second_pass_prep(SymbolTable *symbol_table, int ic, int dc)
+char *second_pass_prep(SymbolTable *symbol_table, int ic, int dc)
 {
-	/*TODO allocate data segment*/
+	char *data_segment;
+
 	increment_data_addresses(symbol_table, ic + 100);
+	data_segment = (char *)malloc_with_error(dc, "failed to allocate memory for data segment");
+
+	return data_segment;
 }
 
 
