@@ -58,7 +58,7 @@ void assembler(char *assembly_file_path)
 
 void second_pass_prep(SymbolTable *symbol_table, int ic, int dc)
 {
-
+	
 }
 
 

@@ -8,6 +8,7 @@
 #define is_word_size(X) (((-2147483647L - 1) <= (X)) && ((X) <= 2147483647L))
 
 int get_next_param(char **params, char **result_param);
+int size_of_single_number(char *data_command);
 
 
 int count_data_length(char *data_command, char **params)
@@ -39,7 +40,17 @@ int count_data_length(char *data_command, char **params)
 
 		params_counter++;
 	}
-	return params_counter;
+	return params_counter * size_of_single_number(data_command);
+}
+
+int size_of_single_number(char *data_command)
+{
+	if(strcmp(data_command, ".db") == 0)
+		return 1;
+	else if(strcmp(data_command, ".dh") == 0
+		return 2;
+	else /*can't be anything else at this point*/
+		return 4;
 }
 
 int get_next_param(char **params, char **result_param)
