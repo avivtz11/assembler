@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "first_pass.h"
+#include "second_pass.h"
 #include "utils.h"
 
 void assembler(char *assembly_file_path);
@@ -49,10 +50,19 @@ void assembler(char *assembly_file_path)
 
 	symbol_table = make_symbol_table();
 	pass_err_flag = first_pass(assembly_fp, symbol_table, &ic, &dc);
+	fclose(assembly_fp);
 	if(pass_err_flag == 1)
 		return;
 
 	data_segment = second_pass_prep(symbol_table, ic, dc);
+	assembly_fp = fopen(assembly_file_path, "r");
+	if (assembly_fp == NULL)
+	{
+		perror(assembly_file_path);
+		return;
+	}
+
+	second_pass(assembly_fp, symbol_table, data_segment);
 
 	fclose(assembly_fp);
 }
