@@ -59,6 +59,7 @@ void assembler(char *assembly_file_path)
 void second_pass_prep(SymbolTable *symbol_table, int ic, int dc)
 {
 	/*TODO allocate data segment*/
+	increment_data_addresses(symbol_table, ic + 100);
 }
 
 
