@@ -82,11 +82,8 @@ int first_pass(FILE *assembly_fp, SymbolTable *symbol_table, int *ic_ref, int *d
 						err_flag = 1;
 						printf("line %d: symbol name is invalid, not adding it", line_num);
 					}
-					else if(add_symbol(symbol_table, current_word, 0, "external") == 1)
-					{
-						err_flag = 1;
-						printf("line %d: symbol already exists", line_num);
-					}
+					else /*in case of extern we have no problem with symbol already being in symbol table*/
+						add_symbol(symbol_table, current_word, 0, "external");
 				}
 
 				else if(strcmp(current_word, ".entry") != 0) /*entry saved for second pass*/
