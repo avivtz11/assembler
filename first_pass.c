@@ -90,11 +90,9 @@ void handle_input_line(char *line, SymbolTable *symbol_table, int *ic, int *dc, 
 
 	else if(!is_entry_def(current_word)) /*entry saved for second pass*/
 	{
-		/*command*/
+		/*regular command*/
 		if(does_line_define_symbol)
-		{
 			check_symbol_and_add(symbol_table, symbol_name, *ic, "code", err_flag, line_num);
-		}
 		*ic += 4;
 	}
 
