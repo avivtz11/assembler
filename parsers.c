@@ -12,6 +12,12 @@ int size_of_single_number(char *data_command);
 int count_asciz_data_length(char **params);
 
 
+void code_data_to_dc(char *data_command, char **params, char *data_segment, int *dc)
+{
+
+}
+
+
 int count_data_length(char *data_command, char **params)
 {
 	int param_err_code;
