@@ -8,11 +8,17 @@
 #include "utils.h"
 
 #define MAX_LINE 82
+#define is_comment_or_empty(X) ((*(X) == '\n') || (*(X) == ';'))
+#define is_symbol_def(X) (*((X) + strlen(X) - 1) == ':')
+#define is_data_storage_line(X) ((strcmp((X), ".dh") == 0) || (strcmp((X), ".dw") == 0) || (strcmp((X), ".db") == 0) || (strcmp((X), ".asciz") == 0))
+#define is_extern_def(X) (strcmp((X), ".extern") == 0)
+#define is_entry_def(X) (strcmp((X), ".entry") == 0)
 
 char *get_next_word(char **line);
 int is_symbol_name_valid(char *symbol_name);
 int is_reserved_word(char *word);
 void data_line_error(int err_code, int line_num);
+int check_symbol_and_add(SymbolTable *symbol_table, char *symbol_name, int value, char *attributes, int *err_flag, int line_num);
 
 
 int first_pass(FILE *assembly_fp, SymbolTable *symbol_table, int *ic_ref, int *dc_ref)
@@ -35,80 +41,53 @@ int first_pass(FILE *assembly_fp, SymbolTable *symbol_table, int *ic_ref, int *d
 		line_ptr = line;
 		does_line_define_symbol = 0;
 		current_word = get_next_word(&line_ptr);
-		line_ptr += strlen(current_word);
-		while(line + strlen(line) >= line_ptr)
+
+		if(!is_comment_or_empty(line)) /*not comment or empty*/
 		{
-			if((*current_word != '\n') && (*current_word != ';')) /*not comment or empty*/
+			if(is_symbol_def(current_word)) /*has symbol*/
 			{
-				if(*(current_word + strlen(current_word) - 1) == ':') /*has symbol*/
-				{
-					does_line_define_symbol = 1;
-					symbol_name = current_word;
-					symbol_name[strlen(symbol_name) - 1] = '\0';
-					current_word = get_next_word(&line_ptr);
-					line_ptr += strlen(current_word);
-				}
-
-				if((strcmp(current_word, ".dh") == 0) || (strcmp(current_word, ".dw") == 0) || (strcmp(current_word, ".db") == 0) || (strcmp(current_word, ".asciz") == 0)) /*is data storage line*/
-				{
-					if(does_line_define_symbol)
-					{
-						if(!is_symbol_name_valid(symbol_name))
-						{
-							err_flag = 1;
-							printf("line %d: symbol name is invalid, not adding it", line_num);
-						}
-						else if(add_symbol(symbol_table, symbol_name, dc, "data") == 1)
-						{
-							err_flag = 1;
-							printf("line %d: symbol name already exists, not adding again", line_num);
-						}
-					}
-					data_line_length = count_data_length(current_word, &line_ptr);
-					if(data_line_length < 0)
-					{
-						err_flag = 1;
-						data_line_error(data_line_length, line_num);
-						data_line_length = 0;  /*won't go to second pass so 0 is okay*/
-					}
-					dc += data_line_length;
-				}
-
-				else if(strcmp(current_word, ".extern") == 0)
-				{
-					current_word = get_next_word(&line_ptr);
-					if(!is_symbol_name_valid(current_word))
-					{
-						err_flag = 1;
-						printf("line %d: symbol name is invalid, not adding it", line_num);
-					}
-					else /*in case of extern we have no problem with symbol already being in symbol table*/
-						add_symbol(symbol_table, current_word, 0, "external");
-				}
-
-				else if(strcmp(current_word, ".entry") != 0) /*entry saved for second pass*/
-				{
-					/*command*/
-					if(does_line_define_symbol)
-					{
-						if(!is_symbol_name_valid(symbol_name))
-						{
-							err_flag = 1;
-							printf("line %d: symbol name is invalid, not adding it", line_num);
-						}
-						else if(add_symbol(symbol_table, symbol_name, ic, "code") == 1)
-						{
-							err_flag = 1;
-							printf("line %d: symbol already exists", line_num);
-						}
-					}
-					ic += 4;
-				}			
+				does_line_define_symbol = 1;
+				symbol_name = current_word;
+				symbol_name[strlen(symbol_name) - 1] = '\0'; /*removing the : */
+				current_word = get_next_word(&line_ptr);
 			}
-			if(symbol_name)
-				free(symbol_name);
-			free(current_word);
+
+			if(is_data_storage_line(current_word)) /*is data storage line*/
+			{
+				if(does_line_define_symbol)
+				{
+					check_symbol_and_add(symbol_table, symbol_name, dc, "data", &err_flag, line_num);
+				}
+				data_line_length = count_data_length(current_word, &line_ptr);
+				if(data_line_length < 0) /*error flag from count_data_length*/
+				{
+					err_flag = 1;
+					data_line_error(data_line_length, line_num);
+					data_line_length = 0;  /*won't go to second pass so 0 is okay*/
+				}
+				dc += data_line_length;
+			}
+
+			else if(is_extern_def(current_word))
+			{
+				current_word = get_next_word(&line_ptr);
+				check_symbol_and_add(symbol_table, current_word, 0, "external", &err_flag, line_num);
+			}
+
+			else if(!is_entry_def(current_word)) /*entry saved for second pass*/
+			{
+				/*command*/
+				if(does_line_define_symbol)
+				{
+					check_symbol_and_add(symbol_table, symbol_name, ic, "code", &err_flag, line_num);
+				}
+				ic += 4;
+			}			
 		}
+		if(symbol_name)
+			free(symbol_name);
+		free(current_word);
+
 		line_num++;
 	}
 
@@ -146,6 +125,22 @@ void data_line_error(int err_code, int line_num)
 			err_message = "line %d: unknown error";
 	}
 	printf(err_message, line_num);
+}
+
+
+void check_symbol_and_add(SymbolTable *symbol_table, char *symbol_name, int value, char *attributes, int *err_flag, int line_num)
+{
+	if(!is_symbol_name_valid(symbol_name))
+	{
+		*err_flag = 1;
+		printf("line %d: symbol name is invalid, not adding it", line_num);
+	}
+	/*in case of extern we have no problem with symbol already being in symbol table*/
+	else if((add_symbol(symbol_table, symbol_name, value, attributes) == 1) && (strcmp(attributes, "external") != 0))
+	{
+		*err_flag = 1;
+		printf("line %d: symbol name already exists, not adding again", line_num);
+	}
 }
 
 
@@ -244,16 +239,18 @@ int is_reserved_word(char *word)
 	return 0;
 }
 
+
 char *get_next_word(char **current_char)
+/*returns empty string if reached end of line*/
 {
 	char *result_word;
 	int result_word_length;
 	char *first_word_char;
 
-	skip_white_space(current_char);
+	skip_white_space(current_char); /*skips tabs and spaces*/
 	first_word_char = *current_char;
 
-	while((**current_char != ' ') && (**current_char != '\t') && (**current_char != '\n'))
+	while((**current_char != ' ') && (**current_char != '\t') && (**current_char != '\n') && (**current_char != '\0'))
 	{
 		(*current_char)++;
 	}
