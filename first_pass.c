@@ -25,12 +25,7 @@ int first_pass(FILE *assembly_fp, SymbolTable *symbol_table, int *ic_ref, int *d
 {
 	char line[MAX_LINE];
 	int line_num;
-	char *current_word;
-	char *line_ptr;
 	int err_flag;
-	int does_line_define_symbol;
-	int data_line_length;
-	char *symbol_name;	
 	int ic = 100;
 	int dc = 0;
 
@@ -38,55 +33,10 @@ int first_pass(FILE *assembly_fp, SymbolTable *symbol_table, int *ic_ref, int *d
 	err_flag = 0;
 	while(fgets(line, sizeof(line), assembly_fp)) /*TODO maybe error if more than MAX_LINE?*/
 	{
-		line_ptr = line;
-		does_line_define_symbol = 0;
-		current_word = get_next_word(&line_ptr);
-
 		if(!is_comment_or_empty(line)) /*not comment or empty*/
 		{
-			if(is_symbol_def(current_word)) /*has symbol*/
-			{
-				does_line_define_symbol = 1;
-				symbol_name = current_word;
-				symbol_name[strlen(symbol_name) - 1] = '\0'; /*removing the : */
-				current_word = get_next_word(&line_ptr);
-			}
-
-			if(is_data_storage_line(current_word)) /*is data storage line*/
-			{
-				if(does_line_define_symbol)
-				{
-					check_symbol_and_add(symbol_table, symbol_name, dc, "data", &err_flag, line_num);
-				}
-				data_line_length = count_data_length(current_word, &line_ptr);
-				if(data_line_length < 0) /*error flag from count_data_length*/
-				{
-					err_flag = 1;
-					data_line_error(data_line_length, line_num);
-					data_line_length = 0;  /*won't go to second pass so 0 is okay*/
-				}
-				dc += data_line_length;
-			}
-
-			else if(is_extern_def(current_word))
-			{
-				current_word = get_next_word(&line_ptr);
-				check_symbol_and_add(symbol_table, current_word, 0, "external", &err_flag, line_num);
-			}
-
-			else if(!is_entry_def(current_word)) /*entry saved for second pass*/
-			{
-				/*command*/
-				if(does_line_define_symbol)
-				{
-					check_symbol_and_add(symbol_table, symbol_name, ic, "code", &err_flag, line_num);
-				}
-				ic += 4;
-			}			
+			handle_input_line(line, symbol_table, &ic, &dc, line_num, &err_flag
 		}
-		if(symbol_name)
-			free(symbol_name);
-		free(current_word);
 
 		line_num++;
 	}
@@ -94,6 +44,64 @@ int first_pass(FILE *assembly_fp, SymbolTable *symbol_table, int *ic_ref, int *d
 	*ic_ref = ic;
 	*dc_ref = dc;
 	return err_flag;
+}
+
+
+void handle_input_line(char *line, SymbolTable *symbol_table, int *ic, int *dc, int line_num, int *err_flag)
+{
+	char *line_ptr;
+	int does_line_define_symbol;
+	char *current_word;
+	char *symbol_name;
+	int data_line_length;
+
+	line_ptr = line;
+	does_line_define_symbol = 0;
+	current_word = get_next_word(&line_ptr);
+	if(is_symbol_def(current_word)) /*has symbol*/
+	{
+		does_line_define_symbol = 1;
+		symbol_name = current_word;
+		symbol_name[strlen(symbol_name) - 1] = '\0'; /*removing the : */
+		current_word = get_next_word(&line_ptr);
+	}
+
+	if(is_data_storage_line(current_word)) /*is data storage line*/
+	{
+		if(does_line_define_symbol)
+		{
+			check_symbol_and_add(symbol_table, symbol_name, *dc, "data", err_flag, line_num);
+		}
+		data_line_length = count_data_length(current_word, &line_ptr);
+		if(data_line_length < 0) /*error flag from count_data_length*/
+		{
+			*err_flag = 1;
+			data_line_error(data_line_length, line_num);
+			data_line_length = 0;  /*won't go to second pass so 0 is okay*/
+		}
+		*dc += data_line_length;
+	}
+
+	else if(is_extern_def(current_word))
+	{
+		current_word = get_next_word(&line_ptr);
+		check_symbol_and_add(symbol_table, current_word, 0, "external", err_flag, line_num);
+	}
+
+	else if(!is_entry_def(current_word)) /*entry saved for second pass*/
+	{
+		/*command*/
+		if(does_line_define_symbol)
+		{
+			check_symbol_and_add(symbol_table, symbol_name, *ic, "code", err_flag, line_num);
+		}
+		*ic += 4;
+	}
+
+	
+	if(symbol_name)
+		free(symbol_name);
+	free(current_word);
 }
 
 
@@ -241,7 +249,7 @@ int is_reserved_word(char *word)
 
 
 char *get_next_word(char **current_char)
-/*returns empty string if reached end of line*/
+/*returns empty string if reached end of line - current_char skips the result word as well*/
 {
 	char *result_word;
 	int result_word_length;
