@@ -9,7 +9,7 @@
 void handle_second_pass_input_line(char *line, SymbolTable *symbol_table, char *data_segment, int *dc, int line_num, int *err_flag);
 
 
-void second_pass(FILE *assembly_fp, SymbolTable *symbol_table, char *data_segment)
+void second_pass(FILE *assembly_fp, SymbolTable *symbol_table, char *data_segment, FILE *ob_fp)
 {
 	char line[MAX_LINE];
 	int line_num;
@@ -44,7 +44,7 @@ void handle_second_pass_input_line(char *line, SymbolTable *symbol_table, char *
 		current_word = get_next_word(&line_ptr);
 
 	if(is_data_storage_line(current_word)) /*is data storage line*/
-		code_data_to_dc(current_word, &line_ptr, data_segment, dc);
+		code_data_to_dc(current_word, &line_ptr, data_segment, dc); /* assuming free of errors because of first pass */
 
 	else if(is_entry_def(current_word)) /*is entry line*/
 	{
@@ -64,8 +64,7 @@ void handle_second_pass_input_line(char *line, SymbolTable *symbol_table, char *
 	}
 
 	else if(!is_extern_def(current_word)) /*extern was taken care of in first pass*/
-		/*command*/
-		printf("command");
+		code_command_to_file();
 
 	free(current_word);
 }

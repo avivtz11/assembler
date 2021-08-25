@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "utils.h"
+
 
 void *malloc_with_error(int allocation_size, char *error_message)
 {
@@ -31,4 +33,26 @@ void copy_char_array(char *src, char *dest, int *dest_position)
 		src++;
 		(*dest_position)++;
 	}
+}
+
+
+char *change_path_extension(char *file_path, char *new_extension)
+{
+	char *path_pointer;
+	char *extension_start;
+	char *result;
+
+	extension_start = file_path;
+	path_pointer = file_path;
+	while(*path_pointer)
+	{
+		if((*path_pointer) == '.')
+			extension_start = path_pointer + 1;
+		path_pointer++;
+	}
+
+	result = (char *)malloc_with_error(path_pointer - name_start + strlen(new_extension));
+	memcpy(result, file_path, extension_start - path_pointer);
+	memcpy(result + (extension_start - path_pointer), new_extension, strlen(new_extension));
+	return result;
 }

@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
 void assembler(char *assembly_file_path)
 {
 	FILE *assembly_fp;
+	char *ob_output_file_path;
 	SymbolTable *symbol_table;
 	char *data_segment;
 	int pass_err_flag;
@@ -62,7 +63,16 @@ void assembler(char *assembly_file_path)
 		return;
 	}
 
-	second_pass(assembly_fp, symbol_table, data_segment);
+	ob_output_file_path = change_path_extension(assembly_file_path, "ob");
+	ob_fp = fopen(ob_output_file_path, "w");
+	free(ob_output_file_path);
+	if (ob_fp == NULL)
+	{
+		perror(assembly_file_path);
+		return;
+	}
+	
+	second_pass(assembly_fp, symbol_table, data_segment, ob_fp);
 
 	fclose(assembly_fp);
 }

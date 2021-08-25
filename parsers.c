@@ -14,6 +14,7 @@ char *split_number_to_bytes_with_terminator(long int value, int is_little_endian
 
 
 void code_data_to_dc(char *data_command, char **params, char *data_segment, int *dc)
+/* assuming free of errors */
 {
 	char *current_param;
 	char *current_param_iterator;
