@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "utils.h"
 
@@ -51,7 +52,7 @@ char *change_path_extension(char *file_path, char *new_extension)
 		path_pointer++;
 	}
 
-	result = (char *)malloc_with_error(path_pointer - name_start + strlen(new_extension));
+	result = (char *)malloc_with_error(extension_start - path_pointer + strlen(new_extension), "couldn't allocate memory");
 	memcpy(result, file_path, extension_start - path_pointer);
 	memcpy(result + (extension_start - path_pointer), new_extension, strlen(new_extension));
 	return result;

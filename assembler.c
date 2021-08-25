@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "first_pass.h"
 #include "second_pass.h"
@@ -29,6 +30,7 @@ int main(int argc, char *argv[])
 void assembler(char *assembly_file_path)
 {
 	FILE *assembly_fp;
+	FILE *ob_fp;
 	char *ob_output_file_path;
 	SymbolTable *symbol_table;
 	char *data_segment;

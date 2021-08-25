@@ -6,13 +6,14 @@
 #include "pass_common.h"
 #include "parsers.h"
 
-void handle_second_pass_input_line(char *line, SymbolTable *symbol_table, char *data_segment, int *dc, int line_num, int *err_flag);
+char *handle_second_pass_input_line(char *line, SymbolTable *symbol_table, char *data_segment, int *dc, int line_num, int *err_flag);
 
 
 void second_pass(FILE *assembly_fp, SymbolTable *symbol_table, char *data_segment, FILE *ob_fp)
 {
 	char line[MAX_LINE];
 	int line_num;
+	char *current_output_line;
 	int err_flag;
 	int dc;
 
@@ -23,7 +24,13 @@ void second_pass(FILE *assembly_fp, SymbolTable *symbol_table, char *data_segmen
 	{
 		if(!is_comment_or_empty(line)) /*not comment or empty*/
 		{
-			handle_second_pass_input_line(line, symbol_table, data_segment, &dc, line_num, &err_flag);
+			current_output_line = handle_second_pass_input_line(line, symbol_table, data_segment, &dc, line_num, &err_flag);
+			if(current_output_line)
+			{
+				fputs(current_output_line, ob_fp);
+				fputc('\n', ob_fp);
+				free(current_output_line);
+			}
 		}
 
 		line_num++;
@@ -31,11 +38,12 @@ void second_pass(FILE *assembly_fp, SymbolTable *symbol_table, char *data_segmen
 }
 
 
-void handle_second_pass_input_line(char *line, SymbolTable *symbol_table, char *data_segment, int *dc, int line_num, int *err_flag)
+char *handle_second_pass_input_line(char *line, SymbolTable *symbol_table, char *data_segment, int *dc, int line_num, int *err_flag)
 {
 	char *line_ptr;
 	char *current_word;
 	int entry_err_code;
+	char *result;
 
 	line_ptr = line;
 	current_word = get_next_word(&line_ptr);
@@ -64,7 +72,8 @@ void handle_second_pass_input_line(char *line, SymbolTable *symbol_table, char *
 	}
 
 	else if(!is_extern_def(current_word)) /*extern was taken care of in first pass*/
-		code_command_to_file();
+		result = code_command(current_word, &line_ptr, symbol_table);
 
 	free(current_word);
+	return result;
 }

@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "utils.h"
+#include "symbol_table.h"
 
 #define is_byte_size(X) ((-128 <= (X)) && ((X) <= 127))
 #define is_half_word_size(X) ((-32768 <= (X)) && ((X) <= 32767))
@@ -11,6 +12,12 @@ int get_next_param(char **params, char **result_param);
 int size_of_single_number(char *data_command);
 int count_asciz_data_length(char **params);
 char *split_number_to_bytes_with_terminator(long int value, int is_little_endian, char *data_command);
+
+
+char *code_command(char *current_word, char **line_ptr, SymbolTable* symbol_table)
+{
+
+}
 
 
 void code_data_to_dc(char *data_command, char **params, char *data_segment, int *dc)
