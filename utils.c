@@ -13,10 +13,22 @@ void *malloc_with_error(int allocation_size, char *error_message)
 	return temp;
 }
 
+
 void skip_white_space(char **str)
 {
 	while((**str == ' ') || (**str == '\t'))
 	{
 		(*str)++;
+	}
+}
+
+
+void copy_char_array(char *src, char *dest, int *dest_position)
+{
+	while((*src) != '\0')
+	{
+		*(dest + *dest_position) = *src;
+		src++;
+		(*dest_position)++;
 	}
 }

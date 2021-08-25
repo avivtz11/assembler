@@ -10,11 +10,93 @@
 int get_next_param(char **params, char **result_param);
 int size_of_single_number(char *data_command);
 int count_asciz_data_length(char **params);
+char *split_number_to_bytes_with_terminator(long int value, int is_little_endian, char *data_command);
 
 
 void code_data_to_dc(char *data_command, char **params, char *data_segment, int *dc)
 {
+	char *current_param;
+	char *current_param_iterator;
+	long int current_param_value;
+	char *data_bytes_temp;
+	int counter;
 
+	if(strcmp(data_command, ".asciz") == 0)
+	{
+		get_next_param(params, &current_param);
+		current_param_iterator = current_param;
+		current_param_iterator++; /*skipping first " */
+
+		data_bytes_temp = (char *)malloc(strlen(current_param - 2 + 1)); /*removing 2 for the 2 ", adding 1 for terminator */
+		counter = 0;
+		while((*current_param_iterator) != '"')
+		{
+			*(data_bytes_temp + counter) = *current_param_iterator;
+			counter++;
+		}
+		*(data_bytes_temp + counter) = '\0'; /*marking end of data*/
+		copy_char_array(data_bytes_temp, data_segment, dc);
+
+		free(data_bytes_temp);
+		free(current_param);
+		return;
+	}
+
+	while((**params) != '\n')
+	{
+		get_next_param(params, &current_param);
+
+		current_param_iterator = current_param;
+		current_param_value = atoi(current_param);
+
+		data_bytes_temp = split_number_to_bytes_with_terminator(current_param_value, 1, data_command);
+		copy_char_array(data_bytes_temp, data_segment, dc);
+
+		free(data_bytes_temp);
+		free(current_param);
+	}
+}
+
+
+char *split_number_to_bytes_with_terminator(long int value, int is_little_endian, char *data_command)
+{
+	char *result;
+	int size;
+	int diff;
+	int counter;
+	int position;
+	int mask = 255; /* 00 00 00 FF */
+
+	diff = 1;
+	counter = 0;
+	position = 0;
+
+	if(strcmp(data_command, ".db") == 0)
+		size = 1;
+	else if(strcmp(data_command, ".dh") == 0)
+		size = 2;
+	else if(strcmp(data_command, ".dw") == 0)
+		size = 4;
+
+	if(!is_little_endian) /*inserting bytes in reverse order*/
+	{
+		position = size - 1;
+		diff = -1;
+	}
+
+	result = (char *)malloc(size + 1);
+	*(result + size) = '\0';
+
+	while(counter < size)
+	{
+		*(result + position) = (char)((value & mask) >> (8 * counter)); /*leaves only bits that are on in mask as well*/
+
+		mask <<= 8;
+		position += diff;
+		counter++;
+	}
+
+	return result;
 }
 
 
@@ -34,21 +116,29 @@ int count_data_length(char *data_command, char **params)
 	{
 		param_err_code = get_next_param(params, &current_param);
 		if(param_err_code != 0)
+		{
+			free(current_param);
 			return param_err_code;
+		}
 
 		current_param_iterator = current_param;
 		current_param_value = strtol(current_param, &current_param_iterator, 10);
 		if(!*current_param_iterator)
+		{
+			free(current_param);
 			return -3;
+		}
 
-		if((strcmp(data_command, ".db") == 0) && !is_byte_size(current_param_value))
+		if(((strcmp(data_command, ".db") == 0) && !is_byte_size(current_param_value)) || 
+			((strcmp(data_command, ".dh") == 0) && !is_half_word_size(current_param_value)) ||
+			((strcmp(data_command, ".dw") == 0) && !is_word_size(current_param_value)))
+		{
+			free(current_param);
 			return -4;
-		if((strcmp(data_command, ".dh") == 0) && !is_half_word_size(current_param_value))
-			return -4;
-		if((strcmp(data_command, ".dw") == 0) && !is_word_size(current_param_value))
-			return -4;
+		}
 
 		params_counter++;
+		free(current_param);
 	}
 	return params_counter * size_of_single_number(data_command);
 }
@@ -58,18 +148,23 @@ int count_asciz_data_length(char **params)
 {
 	int param_err_code;
 	char *current_param;
+	int result;
 
 	param_err_code = get_next_param(params, &current_param);
 	if(param_err_code != 0)
-		return param_err_code;
+		result = param_err_code;
 
-	if((**params) != '\n')
-		return -5;
+	else if((**params) != '\n')
+		result = -5;
 
-	if(((*current_param) != '"') || ((*(current_param + strlen(current_param) - 1)) != '"'))
-		return -6;
+	else if(((*current_param) != '"') || ((*(current_param + strlen(current_param) - 1)) != '"'))
+		result = -6;
 
-	return strlen(current_param) + 1;
+	else
+		result = strlen(current_param) + 1;
+
+	free(current_param);
+	return result;
 }
 
 
