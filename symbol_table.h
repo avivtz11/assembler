@@ -12,7 +12,8 @@ typedef struct SymbolTable{
 } SymbolTable;
 
 
-SymbolTable *make_symbol_table();
+void make_symbol_table(SymbolTable **result);
 int add_symbol(SymbolTable *symbol_table, char *symbol, int value, char *attributes);
 void increment_data_addresses(SymbolTable *symbol_table, int value_to_add);
 int mark_symbol_as_entry(SymbolTable *symbol_table, char *symbol_name);
+void free_symbol_table(SymbolTable *symbol_table);

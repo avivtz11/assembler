@@ -4,18 +4,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-SymbolNode *make_symbol_node(SymbolNode *next, char *symbol, int value, char *attributes);
+void make_symbol_node(SymbolNode **result, SymbolNode *next, char *symbol, int value, char *attributes);
 int is_symbol_name_taken(SymbolTable *symbol_table, char *symbol);
 int is_extern_symbol_taken(SymbolTable *symbol_table, char *symbol);
 void add_attribute(SymbolNode *symbol_node, char *attribute);
 
 
-SymbolTable *make_symbol_table()
+void make_symbol_table(SymbolTable **result)
 {
-	SymbolTable *temp = (SymbolTable *)malloc_with_error(sizeof(SymbolTable), "exit! no memory - couldn't allocate symbol table\n");
+	malloc_with_error((void **)result, sizeof(SymbolTable), "exit! no memory - couldn't allocate symbol table\n");
 	
-	temp -> first = NULL;
-	return temp;		
+	(*result) -> first = NULL;
 }
 
 
@@ -30,7 +29,7 @@ int add_symbol(SymbolTable *symbol_table, char *symbol, int value, char *attribu
 	else if(is_symbol_name_taken(symbol_table, symbol))
 		return 1;
 
-	temp = make_symbol_node(symbol_table->first, symbol, value, attributes);
+	make_symbol_node(&temp, symbol_table->first, symbol, value, attributes);
 
 	symbol_table->first = temp;
 
@@ -119,18 +118,30 @@ void add_attribute(SymbolNode *symbol_node, char *attribute)
 }
 
 
-SymbolNode *make_symbol_node(SymbolNode *next, char *symbol, int value, char *attributes)
+void make_symbol_node(SymbolNode **result, SymbolNode *next, char *symbol, int value, char *attributes)
 {
-	SymbolNode *temp = (SymbolNode *)malloc_with_error(sizeof(SymbolNode), "exit! no memory - couldn't allocate symbol structure\n");
+	malloc_with_error((void **)result, sizeof(SymbolNode), "exit! no memory - couldn't allocate symbol structure\n");
 	
-	temp->next = next;
-	temp->value = value;
+	(*result)->next = next;
+	(*result)->value = value;
 
-	temp->symbol = (char *)malloc_with_error(sizeof(strlen(symbol) + 1), "exit! no memory - couldn't allocate symbol string\n");
-	strcpy(temp->symbol, symbol);
+	malloc_with_error((void **)&((*result)->symbol), sizeof(strlen(symbol) + 1), "exit! no memory - couldn't allocate symbol string\n");
+	strcpy((*result)->symbol, symbol);
 
-	temp->attributes = (char *)malloc_with_error(sizeof(strlen(attributes) + 1), "exit! no memory - couldn't allocate symbol attributes\n");
-	strcpy(temp->attributes, attributes);
+	malloc_with_error((void **)&((*result)->attributes), sizeof(strlen(attributes) + 1), "exit! no memory - couldn't allocate symbol attributes\n");
+	strcpy((*result)->attributes, attributes);
+}
 
-	return temp;
+
+void free_symbol_table(SymbolTable *symbol_table)
+{
+	SymbolNode *tmp;
+	while(symbol_table->first)
+	{
+		tmp = symbol_table->first;
+		symbol_table->first = symbol_table->first->next;
+		free(tmp->symbol);
+		free(tmp->attributes);
+		free(tmp);
+	}
 }

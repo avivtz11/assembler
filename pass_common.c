@@ -5,10 +5,9 @@
 #include "utils.h"
 
 
-char *get_next_word(char **current_char)
+void get_next_word(char **result_word, char **current_char)
 /*returns empty string if reached end of line - current_char skips the result word as well*/
 {
-	char *result_word;
 	int result_word_length;
 	char *first_word_char;
 
@@ -21,8 +20,7 @@ char *get_next_word(char **current_char)
 	}
 
 	result_word_length = (*current_char) - first_word_char;
-	result_word = (char *) malloc(result_word_length + 1);
-	memcpy(result_word, first_word_char, result_word_length);
-	result_word[result_word_length] = '\0';
-	return result_word;
+	*result_word = (char *) malloc(result_word_length + 1);
+	memcpy(*result_word, first_word_char, result_word_length);
+	(*result_word)[result_word_length] = '\0';
 }

@@ -5,4 +5,4 @@
 #define is_extern_def(X) (strcmp((X), ".extern") == 0)
 #define is_entry_def(X) (strcmp((X), ".entry") == 0)
 
-char *get_next_word(char **current_char);
+void get_next_word(char **result_word, char **current_char);

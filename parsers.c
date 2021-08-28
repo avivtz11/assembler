@@ -2,7 +2,9 @@
 #include <string.h>
 
 #include "utils.h"
+#include "parsers_utils.h"
 #include "symbol_table.h"
+#include "command_parsers.h"
 
 #define is_byte_size(X) ((-128 <= (X)) && ((X) <= 127))
 #define is_half_word_size(X) ((-32768 <= (X)) && ((X) <= 32767))
@@ -11,12 +13,22 @@
 int get_next_param(char **params, char **result_param);
 int size_of_single_number(char *data_command);
 int count_asciz_data_length(char **params);
-char *split_number_to_bytes_with_terminator(long int value, int is_little_endian, char *data_command);
+void split_number_to_bytes_with_terminator(char **result, long int value, int is_little_endian, char *data_command);
 
 
-char *code_command(char *current_word, char **line_ptr, SymbolTable* symbol_table)
+void code_command(char **result, char *command, char **line_ptr, SymbolTable* symbol_table, int *err_code)
 {
+	char *as_binary;
+	void(*code_command_to_binary)(char **, char *, char **, SymbolTable*, int *);
 
+	code_command_to_binary = get_command_parsing_function(command);
+	code_command_to_binary(&as_binary, command, line_ptr, symbol_table, err_code);
+	if(!as_binary)
+		return;
+
+	binary_32_to_bytes(result, as_binary, 1);
+
+	free(as_binary);
 }
 
 
@@ -57,8 +69,8 @@ void code_data_to_dc(char *data_command, char **params, char *data_segment, int 
 		current_param_iterator = current_param;
 		current_param_value = atoi(current_param);
 
-		data_bytes_temp = split_number_to_bytes_with_terminator(current_param_value, 1, data_command);
-		copy_char_array(data_bytes_temp, data_segment, dc);
+		split_number_to_bytes_with_terminator(&data_bytes_temp, current_param_value, 1, data_command);
+		copy_char_array(data_bytes_temp, data_segment, dc); /*TODO fix this! can't be \0 terminator!*/
 
 		free(data_bytes_temp);
 		free(current_param);
@@ -66,9 +78,8 @@ void code_data_to_dc(char *data_command, char **params, char *data_segment, int 
 }
 
 
-char *split_number_to_bytes_with_terminator(long int value, int is_little_endian, char *data_command)
+void split_number_to_bytes_with_terminator(char **result, long int value, int is_little_endian, char *data_command)
 {
-	char *result;
 	int size;
 	int diff;
 	int counter;
@@ -92,19 +103,17 @@ char *split_number_to_bytes_with_terminator(long int value, int is_little_endian
 		diff = -1;
 	}
 
-	result = (char *)malloc(size + 1);
-	*(result + size) = '\0';
+	*result = (char *)malloc(size + 1);
+	*(*result + size) = '\0';
 
 	while(counter < size)
 	{
-		*(result + position) = (char)((value & mask) >> (8 * counter)); /*leaves only bits that are on in mask as well*/
+		*(*result + position) = (char)((value & mask) >> (8 * counter)); /*leaves only bits that are on in mask as well*/
 
 		mask <<= 8;
 		position += diff;
 		counter++;
 	}
-
-	return result;
 }
 
 
@@ -131,7 +140,7 @@ int count_data_length(char *data_command, char **params)
 
 		current_param_iterator = current_param;
 		current_param_value = strtol(current_param, &current_param_iterator, 10);
-		if(!*current_param_iterator)
+		if(*current_param_iterator)
 		{
 			free(current_param);
 			return -3;
@@ -184,33 +193,4 @@ int size_of_single_number(char *data_command)
 		return 2;
 	else /*can't be anything else at this point*/
 		return 4;
-}
-
-int get_next_param(char **params, char **result_param)
-{
-	int result_param_length;
-	char *param_first_char;
-	skip_white_space(params);
-
-	if((**params) == ',')
-		return -1;
-
-	param_first_char = *params;
-	while((**params != ' ') && (**params != '\t') && (**params != '\n') && (**params != ','))
-	{
-		(*params)++;
-	}
-
-	result_param_length = (*params) - param_first_char;
-	(*result_param) = (char *) malloc(result_param_length + 1);
-	memcpy(*result_param, param_first_char, result_param_length);
-	(*result_param)[result_param_length] = '\0';
-
-	skip_white_space(params);
-
-	if((**params) != ',')
-		return -2;
-
-	(*params)++;
-	return 0;
 }

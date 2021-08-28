@@ -5,15 +5,13 @@
 #include "utils.h"
 
 
-void *malloc_with_error(int allocation_size, char *error_message)
+void malloc_with_error(void **destination, int allocation_size, char *error_message)
 {
-	void *temp;
-	if (!(temp = malloc(allocation_size)))
+	if (!(*destination = malloc(allocation_size)))
 	{
 		fprintf(stderr, "%s", error_message);
 		exit(1); /*TODO maybe not exit straight away for sake of cleanup*/
 	}
-	return temp;
 }
 
 
@@ -37,23 +35,80 @@ void copy_char_array(char *src, char *dest, int *dest_position)
 }
 
 
-char *change_path_extension(char *file_path, char *new_extension)
+void change_path_extension(char **result, char *file_path, char *new_extension)
 {
 	char *path_pointer;
 	char *extension_start;
-	char *result;
 
 	extension_start = file_path;
 	path_pointer = file_path;
 	while(*path_pointer)
 	{
 		if((*path_pointer) == '.')
-			extension_start = path_pointer + 1;
+			extension_start = path_pointer;
 		path_pointer++;
 	}
 
-	result = (char *)malloc_with_error(extension_start - path_pointer + strlen(new_extension), "couldn't allocate memory");
-	memcpy(result, file_path, extension_start - path_pointer);
-	memcpy(result + (extension_start - path_pointer), new_extension, strlen(new_extension));
-	return result;
+	malloc_with_error((void **)result, extension_start - file_path + strlen(new_extension) + 1, "couldn't allocate memory");
+	(*result)[extension_start - file_path + strlen(new_extension)] = '\0';
+	memcpy(*result, file_path, extension_start - file_path);
+	memcpy((*result) + (extension_start - file_path), new_extension, strlen(new_extension));
+}
+
+
+void byte2bin(char byte, char *result_buffer, int result_buffer_size)
+{
+	int i;
+	char *temp;
+
+	*(result_buffer + result_buffer_size - 1) = '\0';
+	temp = result_buffer + (result_buffer_size - 2);
+
+	for(i = result_buffer_size - 2; i >= 0; i--)
+	{
+		*temp = (byte & 1) + '0';
+		temp--;
+		byte >>= 1;
+	}
+}
+
+
+void binary_32_to_bytes(char **result, char *as_binary, int is_little_endian)
+{	
+	char *temp;
+	char *binary_byte;
+	int offset;
+	int diff;
+	int i;
+
+	malloc_with_error((void **)result, 4, "couldn't allocate memory");
+
+	malloc_with_error((void **)&binary_byte, 9, "couldn't allocate memory");
+	*(binary_byte + 8) = '\0';
+
+	offset = 0;
+	diff = 1;
+	if(is_little_endian)
+	{
+		offset = 3;
+		diff = -1;
+	}
+	for(i = 0; i < 8*4; i+=8)
+	{
+		memcpy(binary_byte, as_binary + i, 8);
+		*((*result) + offset) = strtol(binary_byte, &temp, 2);
+		offset += diff;
+	}
+}
+
+
+void format_output_bytes(char *current_output_bytes, int bytes_count, FILE *fp)
+{
+	int i;
+	for(i = 0; i < bytes_count; i++)
+	{
+		if(i > 0)
+			fputc(' ', fp);
+		fprintf(fp, "%02X", current_output_bytes[i]);
+	}
 }

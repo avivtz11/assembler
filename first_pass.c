@@ -51,13 +51,13 @@ void handle_first_pass_input_line(char *line, SymbolTable *symbol_table, int *ic
 
 	line_ptr = line;
 	does_line_define_symbol = 0;
-	current_word = get_next_word(&line_ptr);
+	get_next_word(&current_word, &line_ptr);
 	if(is_symbol_def(current_word)) /*has symbol*/
 	{
 		does_line_define_symbol = 1;
 		symbol_name = current_word;
 		symbol_name[strlen(symbol_name) - 1] = '\0'; /*removing the : */
-		current_word = get_next_word(&line_ptr);
+		get_next_word(&current_word, &line_ptr);
 	}
 
 	if(is_data_storage_line(current_word)) /*is data storage line*/
@@ -78,7 +78,7 @@ void handle_first_pass_input_line(char *line, SymbolTable *symbol_table, int *ic
 
 	else if(is_extern_def(current_word))
 	{
-		current_word = get_next_word(&line_ptr);
+		get_next_word(&current_word, &line_ptr);
 		check_symbol_and_add(symbol_table, current_word, 0, "external", err_flag, line_num);
 		if(((*line_ptr) != '\n') && ((*line_ptr) != '\0'))
 		{
@@ -91,12 +91,14 @@ void handle_first_pass_input_line(char *line, SymbolTable *symbol_table, int *ic
 	{
 		/*regular command*/
 		if(does_line_define_symbol)
+		{
 			check_symbol_and_add(symbol_table, symbol_name, *ic, "code", err_flag, line_num);
+		}
 		*ic += 4;
 	}
 
 	
-	if(symbol_name)
+	if(does_line_define_symbol)
 		free(symbol_name);
 	free(current_word);
 }

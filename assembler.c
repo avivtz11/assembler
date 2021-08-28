@@ -8,7 +8,7 @@
 
 void assembler(char *assembly_file_path);
 int check_file_ext(char *file_path, char *desired_ext);
-char *second_pass_prep(SymbolTable *symbol_table, int ic, int dc);
+void second_pass_prep(SymbolTable *symbol_table, char **data_segment, int ic, int dc);
 
 
 int main(int argc, char *argv[])
@@ -51,43 +51,51 @@ void assembler(char *assembly_file_path)
 		return;
 	}
 
-	symbol_table = make_symbol_table();
+	make_symbol_table(&symbol_table);
 	pass_err_flag = first_pass(assembly_fp, symbol_table, &ic, &dc);
 	fclose(assembly_fp);
-	if(pass_err_flag == 1)
+	if(pass_err_flag)
+	{
+		free_symbol_table(symbol_table);
 		return;
+	}
 
-	data_segment = second_pass_prep(symbol_table, ic, dc);
+	second_pass_prep(symbol_table, &data_segment, ic, dc);
 	assembly_fp = fopen(assembly_file_path, "r");
 	if (assembly_fp == NULL)
 	{
+		free(data_segment);
+		free_symbol_table(symbol_table);
 		perror(assembly_file_path);
 		return;
 	}
 
-	ob_output_file_path = change_path_extension(assembly_file_path, "ob");
+	change_path_extension(&ob_output_file_path, assembly_file_path, ".ob");
 	ob_fp = fopen(ob_output_file_path, "w");
-	free(ob_output_file_path);
 	if (ob_fp == NULL)
 	{
+		free(ob_output_file_path);
+		free(data_segment);
+		free_symbol_table(symbol_table);
 		perror(assembly_file_path);
 		return;
 	}
 	
-	second_pass(assembly_fp, symbol_table, data_segment, ob_fp);
-
+	pass_err_flag = second_pass(assembly_fp, symbol_table, data_segment, ob_fp);
+	free(data_segment);
+	free_symbol_table(symbol_table);
+	fclose(ob_fp);
 	fclose(assembly_fp);
+	if(pass_err_flag)
+		remove(ob_output_file_path);
+	free(ob_output_file_path);
 }
 
 
-char *second_pass_prep(SymbolTable *symbol_table, int ic, int dc)
+void second_pass_prep(SymbolTable *symbol_table, char **data_segment, int ic, int dc)
 {
-	char *data_segment;
-
 	increment_data_addresses(symbol_table, ic + 100);
-	data_segment = (char *)malloc_with_error(dc, "failed to allocate memory for data segment");
-
-	return data_segment;
+	malloc_with_error((void **)data_segment, dc, "failed to allocate memory for data segment");
 }
 
 
