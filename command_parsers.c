@@ -59,11 +59,11 @@ void code_R_copying_to_binary(char **result, char *command, char **line_ptr, Sym
 	malloc_with_error((void **)result, 4*8 + 1, "couldn't allocate memory");
 
 	code_opcode(result, command);/*opcode*/
-	handle_param(result, line_ptr, err_code, 16, 5, code_register);/*rd*/
+	handle_param(result, line_ptr, err_code, 6, 5, code_register);/*rs*/
 	if(*err_code)
 		return;
 	memcpy((*result) + 11, "00000", 6);/*rt*/
-	handle_param(result, line_ptr, err_code, 6, 5, code_register);/*rs*/
+	handle_param(result, line_ptr, err_code, 16, 5, code_register);/*rd*/
 	if(*err_code)
 		return;
 
@@ -146,6 +146,8 @@ void code_opcode(char **result, char *command)
 	if((strcmp(command, "add") == 0) || (strcmp(command, "sub") == 0) || (strcmp(command, "and") == 0) || (strcmp(command, "or") == 0) ||
 (strcmp(command, "nor") == 0))
 		memcpy(*result, "000000", 7);/*0*/
+	else if((strcmp(command, "move") == 0) || (strcmp(command, "mvhi") == 0) || (strcmp(command, "mvlo") == 0))
+		memcpy(*result, "000001", 7);/*1*/
 	else if(strcmp(command, "addi") == 0)
 		memcpy(*result, "001010", 7);/*10*/
 	else if(strcmp(command, "subi") == 0)
