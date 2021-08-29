@@ -6,6 +6,9 @@
 
 #define is_in_register_range(X) (((X) >= 0) && ((X) <= 31))
 #define is_in_immed_range(X) (((X) >= -32768) && ((X) <= 32767))
+#define is_in_address_range(X) (((X) >= 0) && ((X) <= 33554431))
+
+void read_register_value(long int *register_number, char *register_param, int *err_code);
 
 
 int get_next_param(char **params, char **result_param)
@@ -38,27 +41,35 @@ int get_next_param(char **params, char **result_param)
 }
 
 
-void code_register(char *register_param, char **coded_param, SymbolTable* symbol_table, int ic, int *err_code)
+void read_register_value(long int *register_number, char *register_param, int *err_code)
 {
-	long int register_number;
-
 	if(*register_param != '$')
 	{
 		*err_code = 1;
 		return;
 	}
 	register_param++;
-	register_number = strtol(register_param, &register_param, 10); /*ok to use because values limited(no negativity problem)*/
+	*register_number = strtol(register_param, &register_param, 10); /*ok to use because values limited(no negativity problem)*/
 	if(*register_param)
 	{
 		*err_code = 2;
 		return;
 	}
-	if(!is_in_register_range(register_number))
+	if(!is_in_register_range(*register_number))
 	{
 		*err_code = 3;
 		return;
 	}
+}
+
+
+void code_register(char *register_param, char **coded_param, SymbolTable* symbol_table, int ic, int *err_code)
+{
+	long int register_number;
+
+	read_register_value(&register_number, register_param, err_code);
+	if(*err_code)
+		return;
 
 	malloc_with_error((void **)coded_param, 6, "couldn't allocate memory");/*register takes 5 + terminator*/
 	num2bin(register_number, *coded_param, 6);
@@ -81,7 +92,7 @@ void code_immed(char *immed_param, char **coded_param, SymbolTable* symbol_table
 		return;
 	}
 
-	malloc_with_error((void **)coded_param, 17, "couldn't allocate memory");/*immed takes 17 + terminator*/
+	malloc_with_error((void **)coded_param, 17, "couldn't allocate memory");/*immed takes 16 + terminator*/
 	num2bin(immed_value, *coded_param, 17);
 }
 
@@ -105,7 +116,41 @@ void code_label_distance(char *label_param, char **coded_param, SymbolTable* sym
 		return;
 	}
 
-	malloc_with_error((void **)coded_param, 17, "couldn't allocate memory");/*immed takes 17 + terminator*/
+	malloc_with_error((void **)coded_param, 17, "couldn't allocate memory");/*immed takes 16 + terminator*/
 	num2bin(immed_value, *coded_param, 17);
+}
+
+
+void code_register_or_label_address(char *param, char **coded_param, SymbolTable* symbol_table, int ic, int *err_code)
+{
+	long int param_value;
+	malloc_with_error((void **)coded_param, 27, "couldn't allocate memory");/*takes 26 + terminator*/
+	if((*param) == '$')
+	{
+		**coded_param = '1';
+		read_register_value(&param_value, param, err_code);		
+		if(*err_code)
+		{
+			free(*coded_param);
+			return;
+		}
+	}
+	else
+	{
+		**coded_param = '0';
+		param_value = get_label_value(symbol_table, param);/*if external - zero*/
+		if(param_value == 1)
+		{
+			*err_code = 5;
+			return;
+		}
+		if(!is_in_address_range(param_value))
+		{
+			*err_code = 3;
+			return;
+		}
+	}
+
+	num2bin(param_value, (*coded_param) + 1, 26);
 }
 	
