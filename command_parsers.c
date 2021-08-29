@@ -1,3 +1,5 @@
+/*this file has all the command specific parsers, returned by get_command_parsing_function*/
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -5,6 +7,7 @@
 #include "parsers_utils.h"
 #include "symbol_table.h"
 #include "externals_usage_list.h"
+#include "error_codes.h"
 
 void code_funct(char **result, char *command);
 void code_opcode(char **result, char *command);
@@ -21,6 +24,8 @@ void handle_param(char **result, char **line_ptr, SymbolTable *symbol_table, Ext
 
 
 void(*get_command_parsing_function(char *command))(char **, char *, char **, SymbolTable *, ExternalsUsageList *, int, int *)
+/*this function returns a command parsing funtions according to the given command
+each of these function uses prebuilt parameters parsing function to achieve their goal*/
 {
 	if((strcmp(command, "add") == 0) || (strcmp(command, "sub") == 0) || (strcmp(command, "and") == 0) || (strcmp(command, "or") == 0) ||
 (strcmp(command, "nor") == 0))
@@ -80,7 +85,7 @@ void code_J_call_to_binary(char **result, char *command, char **line_ptr, Symbol
 
 	if((**line_ptr != '\n') && (**line_ptr != '\0'))
 	{
-		*err_code = 4;
+		*err_code = TOO_MUCH_ARGS;
 		return;
 	}
 	(*result)[32] = '\0';
@@ -99,7 +104,7 @@ void code_J_la_to_binary(char **result, char *command, char **line_ptr, SymbolTa
 
 	if((**line_ptr != '\n') && (**line_ptr != '\0'))
 	{
-		*err_code = 4;
+		*err_code = TOO_MUCH_ARGS;
 		return;
 	}
 	(*result)[32] = '\0';
@@ -118,7 +123,7 @@ void code_J_jmp_to_binary(char **result, char *command, char **line_ptr, SymbolT
 
 	if((**line_ptr != '\n') && (**line_ptr != '\0'))
 	{
-		*err_code = 4;
+		*err_code = TOO_MUCH_ARGS;
 		return;
 	}
 	(*result)[32] = '\0';
@@ -142,7 +147,7 @@ void code_I_load_store_to_binary(char **result, char *command, char **line_ptr, 
 
 	if((**line_ptr != '\n') && (**line_ptr != '\0'))
 	{
-		*err_code = 4;
+		*err_code = TOO_MUCH_ARGS;
 		return;
 	}
 	(*result)[32] = '\0';
@@ -165,7 +170,7 @@ void code_I_branching_to_binary(char **result, char *command, char **line_ptr, S
 		return;
 	if((**line_ptr != '\n') && (**line_ptr != '\0'))
 	{
-		*err_code = 4;
+		*err_code = TOO_MUCH_ARGS;
 		return;
 	}
 	(*result)[32] = '\0';
@@ -189,7 +194,7 @@ void code_I_arithmetic_logic_to_binary(char **result, char *command, char **line
 
 	if((**line_ptr != '\n') && (**line_ptr != '\0'))
 	{
-		*err_code = 4;
+		*err_code = TOO_MUCH_ARGS;
 		return;
 	}
 	(*result)[32] = '\0';
@@ -211,7 +216,7 @@ void code_R_copying_to_binary(char **result, char *command, char **line_ptr, Sym
 
 	if((**line_ptr != '\n') && (**line_ptr != '\0'))
 	{
-		*err_code = 4;
+		*err_code = TOO_MUCH_ARGS;
 		return;
 	}
 
@@ -239,7 +244,7 @@ void code_R_arithmetic_logic_to_binary(char **result, char *command, char **line
 
 	if((**line_ptr != '\n') && (**line_ptr != '\0'))
 	{
-		*err_code = 4;
+		*err_code = TOO_MUCH_ARGS;
 		return;
 	}
 
@@ -251,6 +256,8 @@ void code_R_arithmetic_logic_to_binary(char **result, char *command, char **line
 
 
 void handle_param(char **result, char **line_ptr, SymbolTable *symbol_table, ExternalsUsageList *externals_usage_list, int ic, int *err_code, int line_bin_offset, int bin_size, void (*code_param)(char *, char **, SymbolTable *, ExternalsUsageList *, int , int *))
+/*this function enables the generics of the command parsing functions by operating a given parameter parsing function on a given parameter
+all of these functions are defined in parsing utils*/
 {
 	char *current_param;
 	char *coded_param;

@@ -11,6 +11,7 @@ void add_attribute(SymbolNode *symbol_node, char *attribute);
 
 
 void make_symbol_table(SymbolTable **result)
+/*this function creates a symbol table*/
 {
 	malloc_with_error((void **)result, sizeof(SymbolTable));
 	
@@ -19,6 +20,7 @@ void make_symbol_table(SymbolTable **result)
 
 
 int add_symbol(SymbolTable *symbol_table, char *symbol, int value, char *attributes)
+/*this function adds a symbol to symbol table - returns error flag*/
 {
 	SymbolNode *temp;
 	if(strcmp(attributes, "extern") == 0)
@@ -38,6 +40,7 @@ int add_symbol(SymbolTable *symbol_table, char *symbol, int value, char *attribu
 
 
 int is_extern_symbol_taken(SymbolTable *symbol_table, char *symbol)
+/*this function checks if a symbol name is taken by a non external label*/
 {
 	SymbolNode *symbol_node;
 
@@ -69,6 +72,7 @@ int is_symbol_name_taken(SymbolTable *symbol_table, char *symbol)
 
 
 void increment_data_addresses(SymbolTable *symbol_table, int value_to_add)
+/*this function adds a offset to all addresses in symbol table*/
 {
 	SymbolNode *symbol_node;
 
@@ -84,6 +88,7 @@ void increment_data_addresses(SymbolTable *symbol_table, int value_to_add)
 
 
 int get_internal_label_value(SymbolTable *symbol_table, char *label_param)
+/*this funtion gets a non external label - if non exists, return error flag*/
 {
 	SymbolNode *symbol_node;
 	symbol_node = symbol_table->first;
@@ -154,6 +159,7 @@ void add_attribute(SymbolNode *symbol_node, char *attribute)
 
 
 int output_symbols_of_attribute(FILE *fp, SymbolTable *symbol_table, char *attribute)
+/*this function outputs names and values of symbols with the given attribute*/
 {
 	int outputs;
 	SymbolNode *node;
@@ -189,6 +195,7 @@ void make_symbol_node(SymbolNode **result, SymbolNode *next, char *symbol, int v
 
 
 void free_symbol_table(SymbolTable *symbol_table)
+/*this function frees a symbol table completely*/
 {
 	SymbolNode *tmp;
 	while(symbol_table->first)

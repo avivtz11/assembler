@@ -1,3 +1,13 @@
+/*Aviv Tzitayat 315111492 - maman 14*/
+
+/* This is a program that assembles an assembly code in the studied language 
+input - assembly files in a correct format
+output - .ob file containing the code and data segmments
+	 .ext file containing the locations and names of used external labels
+	 .ent file containing the names and location of declaration of entries
+	all names are as the input file.
+	if no ext or ent are present, the files are not created*/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -41,6 +51,11 @@ int main(int argc, char *argv[])
 
 
 void assembler(char *assembly_file_path)
+/* this function contains the main flow of the program-
+we divide the process to 2 passes on the input:
+
+first pass - validating and counting data definitions, building symbol table
+second pass - populating the data segment, validates and outputs the commands using the symbol table when needed*/
 {
 	FILE *assembly_fp;
 	FILE *ob_fp;
@@ -76,6 +91,7 @@ void assembler(char *assembly_file_path)
 
 
 int handle_second_pass(char *assembly_file_path, FILE *assembly_fp, FILE **ob_fp, char **data_segment, SymbolTable **symbol_table, ExternalsUsageList **externals_usage_list, int ic, int dc)
+/* this function operates the second pass - returns error flag*/
 {
 	int pass_err_flag;
 	char *ob_output_file_path;
@@ -104,6 +120,7 @@ int handle_second_pass(char *assembly_file_path, FILE *assembly_fp, FILE **ob_fp
 
 
 int handle_second_pass_prep(FILE **assembly_fp, char *assembly_file_path, SymbolTable **symbol_table, ExternalsUsageList **externals_usage_list, char **data_segment, int ic, int dc)
+/*this function operates the prep for second pass - returns error flag*/
 {
 	second_pass_prep(*symbol_table, externals_usage_list, data_segment, ic, dc);
 	*assembly_fp = fopen(assembly_file_path, "r");
@@ -120,6 +137,7 @@ int handle_second_pass_prep(FILE **assembly_fp, char *assembly_file_path, Symbol
 
 
 int handle_first_pass(char *assembly_file_path, SymbolTable **symbol_table, int *ic, int *dc)
+/*this function operates the first pass - returns error flag*/
 {
 	int pass_err_flag;
 	FILE *assembly_fp;
@@ -154,6 +172,7 @@ void free_and_close_all(char *data_segment, SymbolTable *symbol_table, Externals
 
 
 void second_pass_prep(SymbolTable *symbol_table, ExternalsUsageList **externals_usage_list, char **data_segment, int ic, int dc)
+/*this function creates the externals_usage_list, and the data_segment array. also fixes the symbol table addresses accordingly*/
 {
 	make_externals_usage_list(externals_usage_list);
 	increment_data_addresses(symbol_table, ic);

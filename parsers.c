@@ -4,6 +4,7 @@
 #include "utils.h"
 #include "parsers_utils.h"
 #include "command_parsers.h"
+#include "error_codes.h"
 
 #define is_byte_size(X) ((-128 <= (X)) && ((X) <= 127))
 #define is_half_word_size(X) ((-32768 <= (X)) && ((X) <= 32767))
@@ -16,13 +17,21 @@ int split_number_to_bytes(char **result, long int value, int is_little_endian, c
 
 
 void code_command(char **result, char *command, char **line_ptr, SymbolTable* symbol_table, ExternalsUsageList *externals_usage_list, int ic, int *err_code)
+/*this function is the main command parser. it converts the command to memory bytes*/
 {
 	char *as_binary;
 	void(*code_command_to_binary)(char **, char *, char **, SymbolTable *, ExternalsUsageList *, int, int *);
 
-	code_command_to_binary = get_command_parsing_function(command);
-	code_command_to_binary(&as_binary, command, line_ptr, symbol_table, externals_usage_list, ic, err_code);
+	code_command_to_binary = get_command_parsing_function(command);/*getting the matching code function*/
+	if(!code_command_to_binary)
+	{
+		*err_code = ILLEGAL_COMMAND;
+		return;
+	}
+	code_command_to_binary(&as_binary, command, line_ptr, symbol_table, externals_usage_list, ic, err_code);/*calling the matching code function*/
 	if(!as_binary)
+		return;
+	if(*err_code)
 		return;
 
 	binary_32_to_bytes(result, as_binary, 1);
@@ -32,7 +41,8 @@ void code_command(char **result, char *command, char **line_ptr, SymbolTable* sy
 
 
 void code_data_to_dc(char *data_command, char **params, char *data_segment, int *dc)
-/* assuming free of errors */
+/*this function is the main data commands parser. it converts the data to bytes and into the data segment.
+assuming free of errors - already checked in second pass*/
 {
 	char *current_param;
 	char *current_param_iterator;
@@ -41,7 +51,7 @@ void code_data_to_dc(char *data_command, char **params, char *data_segment, int 
 	int counter;
 	int current_number_size;
 
-	if(strcmp(data_command, ".asciz") == 0)
+	if(strcmp(data_command, ".asciz") == 0)/*handling asciz*/
 	{
 		get_next_param(params, &current_param);
 		current_param_iterator = current_param;
@@ -64,7 +74,7 @@ void code_data_to_dc(char *data_command, char **params, char *data_segment, int 
 		return;
 	}
 
-	while((**params) != '\0')
+	while((**params) != '\0')/*handling other data*/
 	{
 		get_next_param(params, &current_param);
 
@@ -72,7 +82,7 @@ void code_data_to_dc(char *data_command, char **params, char *data_segment, int 
 		current_param_value = atoi(current_param);
 
 		current_number_size = split_number_to_bytes(&data_bytes_temp, current_param_value, 1, data_command);
-		memcpy(data_segment + *dc, data_bytes_temp, current_number_size);
+		memcpy(data_segment + *dc, data_bytes_temp, current_number_size);/*copying the found bytes to data segment*/
 		(*dc) += current_number_size;
 
 		free(data_bytes_temp);
@@ -82,6 +92,7 @@ void code_data_to_dc(char *data_command, char **params, char *data_segment, int 
 
 
 int split_number_to_bytes(char **result, long int value, int is_little_endian, char *data_command)
+/*this function converts a number to byte array, returns the size of the data*/
 {
 	int size;
 	int diff;
@@ -93,12 +104,7 @@ int split_number_to_bytes(char **result, long int value, int is_little_endian, c
 	counter = 0;
 	position = 0;
 
-	if(strcmp(data_command, ".db") == 0)
-		size = 1;
-	else if(strcmp(data_command, ".dh") == 0)
-		size = 2;
-	else if(strcmp(data_command, ".dw") == 0)
-		size = 4;
+	size = size_of_single_number(data_command);
 
 	if(!is_little_endian) /*inserting bytes in reverse order*/
 	{
@@ -121,6 +127,7 @@ int split_number_to_bytes(char **result, long int value, int is_little_endian, c
 
 
 int count_data_length(char *data_command, char **params)
+/*this function counts the length in bytes of the given data definition*/
 {
 	int param_err_code;
 	char *current_param;
@@ -132,6 +139,7 @@ int count_data_length(char *data_command, char **params)
 		return count_asciz_data_length(params);
 
 	params_counter = 0;
+	/*counting the params and multiplying by their size*/
 	while((**params) != '\0')
 	{
 		param_err_code = get_next_param(params, &current_param);
@@ -146,7 +154,7 @@ int count_data_length(char *data_command, char **params)
 		if(*current_param_iterator)
 		{
 			free(current_param);
-			return -3;
+			return INVALID_PARAM_FORMAT;
 		}
 
 		if(((strcmp(data_command, ".db") == 0) && !is_byte_size(current_param_value)) || 
@@ -154,7 +162,7 @@ int count_data_length(char *data_command, char **params)
 			((strcmp(data_command, ".dw") == 0) && !is_word_size(current_param_value)))
 		{
 			free(current_param);
-			return -4;
+			return PARAM_OUT_OF_RANGE;
 		}
 
 		params_counter++;
@@ -175,10 +183,10 @@ int count_asciz_data_length(char **params)
 		result = param_err_code;
 
 	else if((**params) != '\0')
-		result = -5;
+		result = TOO_MUCH_ARGS;
 
 	else if(((*current_param) != '"') || ((*(current_param + strlen(current_param) - 1)) != '"'))
-		result = -6;
+		result = INVALID_PARAM_FORMAT;
 
 	else
 		result = strlen(current_param) - 2 + 1;/*removing 2 for the " */

@@ -7,15 +7,16 @@
 #include "parsers.h"
 #include "utils.h"
 #include "pass_common.h"
+#include "error_codes.h"
 
 int is_symbol_name_valid(char *symbol_name);
 int is_reserved_word(char *word);
-void data_line_error(int err_code, int line_num);
 void check_symbol_and_add(SymbolTable *symbol_table, char *symbol_name, int value, char *attributes, int *err_flag, int line_num);
 void handle_first_pass_input_line(char *line, SymbolTable *symbol_table, int *ic, int *dc, int line_num, int *err_flag);
 
 
 int first_pass(FILE *assembly_fp, SymbolTable *symbol_table, int *ic_ref, int *dc_ref)
+/*this function iterates the file lines and doing the first pass - returns error flag, and populates symbol table and final ic and dc*/
 {
 	char line[MAX_LINE];
 	int line_num;
@@ -27,6 +28,11 @@ int first_pass(FILE *assembly_fp, SymbolTable *symbol_table, int *ic_ref, int *d
 	err_flag = 0;
 	while(fgets(line, sizeof(line), assembly_fp))
 	{
+		if(strlen(line) >= MAX_LINE - 1)
+		{
+			printf("line %d: %s\n", line_num, "line is too long!");
+			return 1;/*this messes up the whole parsing so returning right away*/
+		}
 		if(!is_comment_or_empty(line)) /*not comment or empty*/
 		{
 			handle_first_pass_input_line(line, symbol_table, &ic, &dc, line_num, &err_flag);
@@ -42,6 +48,7 @@ int first_pass(FILE *assembly_fp, SymbolTable *symbol_table, int *ic_ref, int *d
 
 
 void handle_first_pass_input_line(char *line, SymbolTable *symbol_table, int *ic, int *dc, int line_num, int *err_flag)
+/*this function contains the main flow for a line in first pass*/
 {
 	char *line_ptr;
 	int does_line_define_symbol;
@@ -70,13 +77,13 @@ void handle_first_pass_input_line(char *line, SymbolTable *symbol_table, int *ic
 		if(data_line_length < 0) /*error flag from count_data_length*/
 		{
 			*err_flag = 1;
-			data_line_error(data_line_length, line_num);
+			line_error(data_line_length, line_num);
 			data_line_length = 0;  /*won't go to second pass so 0 is okay*/
 		}
 		*dc += data_line_length;
 	}
 
-	else if(is_extern_def(current_word))
+	else if(is_extern_def(current_word))/*extern*/
 	{
 		get_next_word(&current_word, &line_ptr);
 		check_symbol_and_add(symbol_table, current_word, 0, "external", err_flag, line_num);
@@ -104,38 +111,8 @@ void handle_first_pass_input_line(char *line, SymbolTable *symbol_table, int *ic
 }
 
 
-void data_line_error(int err_code, int line_num)
-{
-	char *err_message;
-
-	switch(err_code)
-	{
-		case -1:
-			err_message = "line %d: redundant comma between params\n";
-			break;
-		case -2:
-			err_message = "line %d: missing comma between params\n";
-			break;
-		case -3:
-			err_message = "line %d: data param is not a valid number\n";
-			break;
-		case -4:
-			err_message = "line %d: data param is not of valid size\n";
-			break;
-		case -5:
-			err_message = "line %d: asciz only gets one param\n";
-			break;
-		case -6:
-			err_message = "line %d: string param in asciz must have \"\n";
-			break;
-		default:
-			err_message = "line %d: unknown error\n";
-	}
-	printf(err_message, line_num);
-}
-
-
 void check_symbol_and_add(SymbolTable *symbol_table, char *symbol_name, int value, char *attributes, int *err_flag, int line_num)
+/*this function validates symbol name and calling an add function*/
 {
 	if(!is_symbol_name_valid(symbol_name))
 	{

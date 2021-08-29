@@ -8,11 +8,15 @@
 #include "parsers.h"
 #include "utils.h"
 #include "output_utils.h"
+#include "error_codes.h"
 
 char *handle_second_pass_input_line(char *line, SymbolTable *symbol_table, ExternalsUsageList *externals_usage_list, char *data_segment, int *dc, int *ic, int line_num, int *err_flag);
+void command_input_line_error(int err_code, int line_num);
 
 
 int second_pass(FILE *assembly_fp, SymbolTable *symbol_table, ExternalsUsageList *externals_usage_list, char *data_segment, FILE *ob_fp)
+/*this function iterates the file lines and doing the second pass for each one - returns error flag, populates data_segment and externals_usage_list
+here the code is being outputed to the file*/
 {
 	char line[MAX_LINE];
 	int line_num;
@@ -46,6 +50,7 @@ int second_pass(FILE *assembly_fp, SymbolTable *symbol_table, ExternalsUsageList
 
 
 char *handle_second_pass_input_line(char *line, SymbolTable *symbol_table, ExternalsUsageList *externals_usage_list, char *data_segment, int *dc, int *ic, int line_num, int *err_flag)
+/*this function contains the main flow for a line in the second pass*/
 {
 	char *line_ptr;
 	char *current_word;
@@ -85,7 +90,7 @@ char *handle_second_pass_input_line(char *line, SymbolTable *symbol_table, Exter
 		if(!result)
 		{
 			*err_flag = 1;
-			/*command_input_line_error(err_code, line_num);*/ /*TODO handle error code*/
+			line_error(err_code, line_num);
 		}
 		(*ic) += 4;
 	}
