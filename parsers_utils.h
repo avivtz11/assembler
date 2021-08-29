@@ -8,5 +8,6 @@ void code_register(char *register_param, char **coded_param, SymbolTable* symbol
 void code_immed(char *immed_param, char **coded_param, SymbolTable* symbol_table, int ic, int *err_code);
 void code_label_distance(char *label_param, char **coded_param, SymbolTable* symbol_table, int ic, int *err_code);
 void code_register_or_label_address(char *label_param, char **coded_param, SymbolTable* symbol_table, int ic, int *err_code);
+void code_register_address(char *param, char **coded_param, SymbolTable* symbol_table, int ic, int *err_code);
 
 #endif/*PARSERS_UTILS_H*/

@@ -127,7 +127,7 @@ void code_register_or_label_address(char *param, char **coded_param, SymbolTable
 	malloc_with_error((void **)coded_param, 27, "couldn't allocate memory");/*takes 26 + terminator*/
 	if((*param) == '$')
 	{
-		**coded_param = '1';
+		**coded_param = '1';/*reg*/
 		read_register_value(&param_value, param, err_code);		
 		if(*err_code)
 		{
@@ -137,7 +137,7 @@ void code_register_or_label_address(char *param, char **coded_param, SymbolTable
 	}
 	else
 	{
-		**coded_param = '0';
+		**coded_param = '0';/*reg*/
 		param_value = get_label_value(symbol_table, param);/*if external - zero*/
 		if(param_value == 1)
 		{
@@ -149,6 +149,28 @@ void code_register_or_label_address(char *param, char **coded_param, SymbolTable
 			*err_code = 3;
 			return;
 		}
+	}
+
+	num2bin(param_value, (*coded_param) + 1, 26);
+}
+
+
+void code_register_address(char *param, char **coded_param, SymbolTable* symbol_table, int ic, int *err_code)
+{
+	long int param_value;
+	malloc_with_error((void **)coded_param, 27, "couldn't allocate memory");/*takes 26 + terminator*/
+	**coded_param = '0';/*reg*/
+
+	param_value = get_label_value(symbol_table, param);/*if external - zero*/
+	if(param_value == 1)
+	{
+		*err_code = 5;
+		return;
+	}
+	if(!is_in_address_range(param_value))
+	{
+		*err_code = 3;
+		return;
 	}
 
 	num2bin(param_value, (*coded_param) + 1, 26);

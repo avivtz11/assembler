@@ -13,6 +13,7 @@ void code_I_arithmetic_logic_to_binary(char **result, char *command, char **line
 void code_I_branching_to_binary(char **result, char *command, char **line_ptr, SymbolTable *symbol_table, int ic, int *err_code);
 void code_I_load_store_to_binary(char **result, char *command, char **line_ptr, SymbolTable *symbol_table, int ic, int *err_code);
 void code_J_jmp_to_binary(char **result, char *command, char **line_ptr, SymbolTable *symbol_table, int ic, int *err_code);
+void code_J_la_to_binary(char **result, char *command, char **line_ptr, SymbolTable *symbol_table, int ic, int *err_code);
 void handle_param(char **result, char **line_ptr, SymbolTable *symbol_table, int ic, int *err_code, int line_bin_offset, int bin_size, void (*code_param)(char *, char ** ,SymbolTable * ,int ,int *));
 
 
@@ -39,7 +40,30 @@ void(*get_command_parsing_function(char *command))(char **, char *, char **, Sym
 	if(strcmp(command, "jmp") == 0)
 		return code_J_jmp_to_binary;
 
+	if(strcmp(command, "la") == 0)
+		return code_J_la_to_binary;
+
 	return NULL;
+}
+
+
+void code_J_la_to_binary(char **result, char *command, char **line_ptr, SymbolTable *symbol_table, int ic, int *err_code)
+{
+	
+	malloc_with_error((void **)result, 4*8 + 1, "couldn't allocate memory");
+
+	code_opcode(result, command);/*opcode*/
+
+	handle_param(result, line_ptr, symbol_table, ic, err_code, 6, 26, code_register_address);/*reg + address*/
+	if(*err_code)
+		return;
+
+	if((**line_ptr != '\n') && (**line_ptr != '\0'))
+	{
+		*err_code = 4;
+		return;
+	}
+	(*result)[32] = '\0';
 }
 
 
@@ -49,7 +73,7 @@ void code_J_jmp_to_binary(char **result, char *command, char **line_ptr, SymbolT
 
 	code_opcode(result, command);/*opcode*/
 
-	handle_param(result, line_ptr, symbol_table, ic, err_code, 6, 26, code_register_or_label_address);/*rs*/
+	handle_param(result, line_ptr, symbol_table, ic, err_code, 6, 26, code_register_or_label_address);/*reg + address*/
 	if(*err_code)
 		return;
 
