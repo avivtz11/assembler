@@ -83,6 +83,24 @@ void increment_data_addresses(SymbolTable *symbol_table, int value_to_add)
 }
 
 
+int get_internal_label_value(SymbolTable *symbol_table, char *label_param)
+{
+	SymbolNode *symbol_node;
+	symbol_node = symbol_table->first;
+	while(symbol_node)
+	{
+		if(strcmp(symbol_node->symbol, label_param) == 0)
+		{
+			if(strstr(symbol_node->attributes, "external"))
+				return 1;
+			return symbol_node->value;
+		}
+		symbol_node = symbol_node->next;
+	}
+	return 1;
+}
+
+
 int mark_symbol_as_entry(SymbolTable *symbol_table, char *symbol_name)
 {
 	SymbolNode *symbol_node;

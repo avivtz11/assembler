@@ -7,7 +7,7 @@
 #include "parsers.h"
 #include "utils.h"
 
-char *handle_second_pass_input_line(char *line, SymbolTable *symbol_table, char *data_segment, int *dc, int line_num, int *err_flag);
+char *handle_second_pass_input_line(char *line, SymbolTable *symbol_table, char *data_segment, int *dc, int *ic, int line_num, int *err_flag);
 
 
 int second_pass(FILE *assembly_fp, SymbolTable *symbol_table, char *data_segment, FILE *ob_fp)
@@ -17,9 +17,11 @@ int second_pass(FILE *assembly_fp, SymbolTable *symbol_table, char *data_segment
 	char *current_output_bytes;
 	int err_flag;
 	int dc;
+	int ic;
 	int byte_location;
 
 	dc = 0;
+	ic = 100;
 	line_num = 1;
 	err_flag = 0;
 	byte_location = 100;
@@ -27,7 +29,7 @@ int second_pass(FILE *assembly_fp, SymbolTable *symbol_table, char *data_segment
 	{
 		if(!is_comment_or_empty(line)) /*not comment or empty*/
 		{
-			current_output_bytes = handle_second_pass_input_line(line, symbol_table, data_segment, &dc, line_num, &err_flag);
+			current_output_bytes = handle_second_pass_input_line(line, symbol_table, data_segment, &dc, &ic, line_num, &err_flag);
 			if(current_output_bytes)/*if error - skips in print (output file deleted anyway)*/
 			{
 				fprintf(ob_fp,"%04d ", byte_location);
@@ -44,7 +46,7 @@ int second_pass(FILE *assembly_fp, SymbolTable *symbol_table, char *data_segment
 }
 
 
-char *handle_second_pass_input_line(char *line, SymbolTable *symbol_table, char *data_segment, int *dc, int line_num, int *err_flag)
+char *handle_second_pass_input_line(char *line, SymbolTable *symbol_table, char *data_segment, int *dc, int *ic, int line_num, int *err_flag)
 {
 	char *line_ptr;
 	char *current_word;
@@ -79,12 +81,13 @@ char *handle_second_pass_input_line(char *line, SymbolTable *symbol_table, char 
 
 	else if(!is_extern_def(current_word)) /*extern was taken care of in first pass*/
 	{
-		code_command(&result, current_word, &line_ptr, symbol_table, &err_code);
+		code_command(&result, current_word, &line_ptr, symbol_table, *ic, &err_code);
 		if(!result)
 		{
 			*err_flag = 1;
 			/*command_input_line_error(err_code, line_num);*/ /*TODO handle error code*/
 		}
+		(*ic) += 4;
 	}
 
 	free(current_word);

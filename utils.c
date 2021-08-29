@@ -56,7 +56,7 @@ void change_path_extension(char **result, char *file_path, char *new_extension)
 }
 
 
-void num2bin(long int num, char *result_buffer, int result_buffer_size)
+void num2bin(long int num, char *result_buffer, int result_buffer_size)/*TODO make sure 2's complement*/
 {
 	int i;
 	char *temp;

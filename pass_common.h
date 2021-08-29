@@ -1,3 +1,6 @@
+#ifndef PASS_COMMON_H
+#define PASS_COMMON_H
+
 #define MAX_LINE 82
 #define is_comment_or_empty(X) ((*(X) == '\n') || (*(X) == ';'))
 #define is_symbol_def(X) (*((X) + strlen(X) - 1) == ':')
@@ -6,3 +9,5 @@
 #define is_entry_def(X) (strcmp((X), ".entry") == 0)
 
 void get_next_word(char **result_word, char **current_char);
+
+#endif/*PASS_COMMON_H*/

@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "utils.h"
+#include "symbol_table.h"
 
 #define is_in_register_range(X) (((X) >= 0) && ((X) <= 31))
 #define is_in_immed_range(X) (((X) >= -32768) && ((X) <= 32767))
@@ -37,7 +38,7 @@ int get_next_param(char **params, char **result_param)
 }
 
 
-void code_register(char *register_param, char **coded_param, int *err_code)
+void code_register(char *register_param, char **coded_param, SymbolTable* symbol_table, int ic, int *err_code)
 {
 	long int register_number;
 
@@ -64,7 +65,7 @@ void code_register(char *register_param, char **coded_param, int *err_code)
 }
 
 
-void code_immed(char *immed_param, char **coded_param, int *err_code)
+void code_immed(char *immed_param, char **coded_param, SymbolTable* symbol_table, int ic, int *err_code)
 {
 	long int immed_value;
 
@@ -74,6 +75,30 @@ void code_immed(char *immed_param, char **coded_param, int *err_code)
 		*err_code = 2;
 		return;
 	}
+	if(!is_in_immed_range(immed_value))
+	{
+		*err_code = 3;
+		return;
+	}
+
+	malloc_with_error((void **)coded_param, 17, "couldn't allocate memory");/*immed takes 17 + terminator*/
+	num2bin(immed_value, *coded_param, 17);
+}
+
+
+void code_label_distance(char *label_param, char **coded_param, SymbolTable* symbol_table, int ic, int *err_code)
+{
+	int label_value;
+	long int immed_value;
+
+	label_value = get_internal_label_value(symbol_table, label_param);
+	if(label_value == 1)
+	{
+		*err_code = 4;
+		return;
+	}
+
+	immed_value = label_value - ic;
 	if(!is_in_immed_range(immed_value))
 	{
 		*err_code = 3;

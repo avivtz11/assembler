@@ -155,13 +155,14 @@ int is_symbol_name_valid(char *symbol_name)
 {
 	char *current_char = symbol_name;
 
-	if(isalpha(*current_char) == 0)/*first symbol char must be alphabetic*/
+	if(!isalpha(*current_char))/*first symbol char must be alphabetic*/
 		return 0;
 
-	while(*(current_char++) != '\0')/*all chars must be alphanumeric*/
+	while((*current_char) != '\0')/*all chars must be alphanumeric*/
 	{
-		if(isalnum(*current_char) == 0)
+		if(!isalnum(*current_char))
 			return 0;
+		current_char++;
 	}
 
 	if(strlen(symbol_name) > 31)
@@ -176,72 +177,72 @@ int is_symbol_name_valid(char *symbol_name)
 
 int is_reserved_word(char *word)
 {
-	if(!strcmp(word, "add") == 0)
+	if(strcmp(word, "add") == 0)
 		return 1;
-	else if(!strcmp(word, "sub") == 0)
+	else if(strcmp(word, "sub") == 0)
 		return 1;
-	else if(!strcmp(word, "and") == 0)
+	else if(strcmp(word, "and") == 0)
 		return 1;
-	else if(!strcmp(word, "or") == 0)
+	else if(strcmp(word, "or") == 0)
 		return 1;
-	else if(!strcmp(word, "nor") == 0)
+	else if(strcmp(word, "nor") == 0)
 		return 1;
-	else if(!strcmp(word, "move") == 0)
+	else if(strcmp(word, "move") == 0)
 		return 1;
-	else if(!strcmp(word, "mvhi") == 0)
+	else if(strcmp(word, "mvhi") == 0)
 		return 1;
-	else if(!strcmp(word, "mvlo") == 0)
+	else if(strcmp(word, "mvlo") == 0)
 		return 1;
-	else if(!strcmp(word, "addi") == 0)
+	else if(strcmp(word, "addi") == 0)
 		return 1;
-	else if(!strcmp(word, "subi") == 0)
+	else if(strcmp(word, "subi") == 0)
 		return 1;
-	else if(!strcmp(word, "andi") == 0)
+	else if(strcmp(word, "andi") == 0)
 		return 1;
-	else if(!strcmp(word, "ori") == 0)
+	else if(strcmp(word, "ori") == 0)
 		return 1;
-	else if(!strcmp(word, "nori") == 0)
+	else if(strcmp(word, "nori") == 0)
 		return 1;
-	else if(!strcmp(word, "bne") == 0)
+	else if(strcmp(word, "bne") == 0)
 		return 1;
-	else if(!strcmp(word, "beq") == 0)
+	else if(strcmp(word, "beq") == 0)
 		return 1;
-	else if(!strcmp(word, "blt") == 0)
+	else if(strcmp(word, "blt") == 0)
 		return 1;
-	else if(!strcmp(word, "bgt") == 0)
+	else if(strcmp(word, "bgt") == 0)
 		return 1;
-	else if(!strcmp(word, "lb") == 0)
+	else if(strcmp(word, "lb") == 0)
 		return 1;
-	else if(!strcmp(word, "sb") == 0)
+	else if(strcmp(word, "sb") == 0)
 		return 1;
-	else if(!strcmp(word, "lw") == 0)
+	else if(strcmp(word, "lw") == 0)
 		return 1;
-	else if(!strcmp(word, "sw") == 0)
+	else if(strcmp(word, "sw") == 0)
 		return 1;
-	else if(!strcmp(word, "lh") == 0)
+	else if(strcmp(word, "lh") == 0)
 		return 1;
-	else if(!strcmp(word, "sh") == 0)
+	else if(strcmp(word, "sh") == 0)
 		return 1;
-	else if(!strcmp(word, "jmp") == 0)
+	else if(strcmp(word, "jmp") == 0)
 		return 1;
-	else if(!strcmp(word, "la") == 0)
+	else if(strcmp(word, "la") == 0)
 		return 1;
-	else if(!strcmp(word, "call") == 0)
+	else if(strcmp(word, "call") == 0)
 		return 1;
-	else if(!strcmp(word, "stop") == 0)
+	else if(strcmp(word, "stop") == 0)
 		return 1;
 
-	else if(!strcmp(word, "db") == 0)
+	else if(strcmp(word, "db") == 0)
 		return 1;
-	else if(!strcmp(word, "dw") == 0)
+	else if(strcmp(word, "dw") == 0)
 		return 1;
-	else if(!strcmp(word, "dh") == 0)
+	else if(strcmp(word, "dh") == 0)
 		return 1;
-	else if(!strcmp(word, "asciz") == 0)
+	else if(strcmp(word, "asciz") == 0)
 		return 1;
-	else if(!strcmp(word, "entry") == 0)
+	else if(strcmp(word, "entry") == 0)
 		return 1;
-	else if(!strcmp(word, "extern") == 0)
+	else if(strcmp(word, "extern") == 0)
 		return 1;
 
 	return 0;
