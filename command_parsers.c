@@ -9,7 +9,8 @@ void code_funct(char **result, char *command);
 void code_opcode(char **result, char *command);
 void code_R_arithmetic_logic_to_binary(char **result, char *command, char **line_ptr, SymbolTable* symbol_table, int *err_code);
 void code_R_copying_to_binary(char **result, char *command, char **line_ptr, SymbolTable* symbol_table, int *err_code);
-void code_param(char **result, char **line_ptr, int *err_code, int line_bin_offset, int bin_size);
+void code_I_arithmetic_logic_to_binary(char **result, char *command, char **line_ptr, SymbolTable* symbol_table, int *err_code);
+void handle_param(char **result, char **line_ptr, int *err_code, int line_bin_offset, int bin_size, void (*code_param)(char *, char ** ,int *));
 
 
 void(*get_command_parsing_function(char *command))(char **, char *, char **, SymbolTable*, int *)
@@ -21,7 +22,35 @@ void(*get_command_parsing_function(char *command))(char **, char *, char **, Sym
 	if((strcmp(command, "move") == 0) || (strcmp(command, "mvhi") == 0) || (strcmp(command, "mvlo") == 0))
 		return code_R_copying_to_binary;
 
+	if((strcmp(command, "addi") == 0) || (strcmp(command, "subi") == 0) || (strcmp(command, "andi") == 0) || (strcmp(command, "ori") == 0) ||
+(strcmp(command, "nori") == 0))
+		return code_I_arithmetic_logic_to_binary;
+
 	return NULL;
+}
+
+
+void code_I_arithmetic_logic_to_binary(char **result, char *command, char **line_ptr, SymbolTable* symbol_table, int *err_code)
+{
+	malloc_with_error((void **)result, 4*8 + 1, "couldn't allocate memory");
+
+	code_opcode(result, command);/*opcode*/
+	handle_param(result, line_ptr, err_code, 6, 5, code_register);/*rs*/
+	if(*err_code)
+		return;
+	handle_param(result, line_ptr, err_code, 16, 16, code_immed);/*immed*/
+	if(*err_code)
+		return;
+	handle_param(result, line_ptr, err_code, 11, 5, code_register);/*rt*/
+	if(*err_code)
+		return;
+
+	if((**line_ptr != '\n') && (**line_ptr != '\0'))
+	{
+		*err_code = 4;
+		return;
+	}
+	(*result)[32] = '\0';
 }
 
 
@@ -30,11 +59,11 @@ void code_R_copying_to_binary(char **result, char *command, char **line_ptr, Sym
 	malloc_with_error((void **)result, 4*8 + 1, "couldn't allocate memory");
 
 	code_opcode(result, command);/*opcode*/
-	code_param(result, line_ptr, err_code, 16, 6);/*rd*/
+	handle_param(result, line_ptr, err_code, 16, 5, code_register);/*rd*/
 	if(*err_code)
 		return;
 	memcpy((*result) + 11, "00000", 6);/*rt*/
-	code_param(result, line_ptr, err_code, 6, 6);/*rs*/
+	handle_param(result, line_ptr, err_code, 6, 5, code_register);/*rs*/
 	if(*err_code)
 		return;
 
@@ -56,13 +85,13 @@ void code_R_arithmetic_logic_to_binary(char **result, char *command, char **line
 	malloc_with_error((void **)result, 4*8 + 1, "couldn't allocate memory");
 
 	code_opcode(result, command);/*opcode*/
-	code_param(result, line_ptr, err_code, 6, 6);/*rs*/
+	handle_param(result, line_ptr, err_code, 6, 5, code_register);/*rs*/
 	if(*err_code)
 		return;
-	code_param(result, line_ptr, err_code, 11, 6);/*rt*/
+	handle_param(result, line_ptr, err_code, 11, 5, code_register);/*rt*/
 	if(*err_code)
 		return;
-	code_param(result, line_ptr, err_code, 16, 6);/*rd*/
+	handle_param(result, line_ptr, err_code, 16, 5, code_register);/*rd*/
 	if(*err_code)
 		return;
 
@@ -79,7 +108,7 @@ void code_R_arithmetic_logic_to_binary(char **result, char *command, char **line
 }
 
 
-void code_param(char **result, char **line_ptr, int *err_code, int line_bin_offset, int bin_size)
+void handle_param(char **result, char **line_ptr, int *err_code, int line_bin_offset, int bin_size, void (*code_param)(char *, char ** ,int *))
 {
 	char *current_param;
 	char *coded_param;
@@ -87,7 +116,7 @@ void code_param(char **result, char **line_ptr, int *err_code, int line_bin_offs
 	*err_code = get_next_param(line_ptr, &current_param);
 	if(*err_code)
 		return;
-	code_register(current_param, &coded_param, err_code);
+	code_param(current_param, &coded_param, err_code);
 	free(current_param);
 	if(*err_code)
 		return;

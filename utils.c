@@ -56,7 +56,7 @@ void change_path_extension(char **result, char *file_path, char *new_extension)
 }
 
 
-void byte2bin(char byte, char *result_buffer, int result_buffer_size)
+void num2bin(long int num, char *result_buffer, int result_buffer_size)
 {
 	int i;
 	char *temp;
@@ -66,9 +66,9 @@ void byte2bin(char byte, char *result_buffer, int result_buffer_size)
 
 	for(i = result_buffer_size - 2; i >= 0; i--)
 	{
-		*temp = (byte & 1) + '0';
+		*temp = (num & 1) + '0';
 		temp--;
-		byte >>= 1;
+		num >>= 1;
 	}
 }
 
@@ -109,6 +109,6 @@ void format_output_bytes(char *current_output_bytes, int bytes_count, FILE *fp)
 	{
 		if(i > 0)
 			fputc(' ', fp);
-		fprintf(fp, "%02X", current_output_bytes[i]);
+		fprintf(fp, "%02X", (unsigned char)(current_output_bytes[i]));
 	}
 }

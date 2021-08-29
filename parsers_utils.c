@@ -3,6 +3,9 @@
 
 #include "utils.h"
 
+#define is_in_register_range(X) (((X) >= 0) && ((X) <= 31))
+#define is_in_immed_range(X) (((X) >= -32768) && ((X) <= 32767))
+
 
 int get_next_param(char **params, char **result_param)
 {
@@ -36,7 +39,7 @@ int get_next_param(char **params, char **result_param)
 
 void code_register(char *register_param, char **coded_param, int *err_code)
 {
-	int register_number;
+	long int register_number;
 
 	if(*register_param != '$')
 	{
@@ -44,18 +47,40 @@ void code_register(char *register_param, char **coded_param, int *err_code)
 		return;
 	}
 	register_param++;
-	register_number = strtol(register_param, &register_param, 10);
+	register_number = strtol(register_param, &register_param, 10); /*ok to use because values limited(no negativity problem)*/
 	if(*register_param)
 	{
 		*err_code = 2;
 		return;
 	}
-	if((register_number < 0) || (register_number > 31))
+	if(!is_in_register_range(register_number))
 	{
 		*err_code = 3;
 		return;
 	}
 
 	malloc_with_error((void **)coded_param, 6, "couldn't allocate memory");/*register takes 5 + terminator*/
-	byte2bin((char)(register_number), *coded_param, 6);
+	num2bin(register_number, *coded_param, 6);
 }
+
+
+void code_immed(char *immed_param, char **coded_param, int *err_code)
+{
+	long int immed_value;
+
+	immed_value = strtol(immed_param, &immed_param, 10);
+	if(*immed_param)
+	{
+		*err_code = 2;
+		return;
+	}
+	if(!is_in_immed_range(immed_value))
+	{
+		*err_code = 3;
+		return;
+	}
+
+	malloc_with_error((void **)coded_param, 17, "couldn't allocate memory");/*immed takes 17 + terminator*/
+	num2bin(immed_value, *coded_param, 17);
+}
+	

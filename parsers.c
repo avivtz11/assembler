@@ -139,7 +139,7 @@ int count_data_length(char *data_command, char **params)
 		}
 
 		current_param_iterator = current_param;
-		current_param_value = strtol(current_param, &current_param_iterator, 10);
+		current_param_value = strtol(current_param, &current_param_iterator, 10); /*TODO probably needs to change*/
 		if(*current_param_iterator)
 		{
 			free(current_param);
