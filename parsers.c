@@ -15,13 +15,13 @@ int count_asciz_data_length(char **params);
 int split_number_to_bytes(char **result, long int value, int is_little_endian, char *data_command);
 
 
-void code_command(char **result, char *command, char **line_ptr, SymbolTable* symbol_table, int ic, int *err_code)
+void code_command(char **result, char *command, char **line_ptr, SymbolTable* symbol_table, ExternalsUsageList *externals_usage_list, int ic, int *err_code)
 {
 	char *as_binary;
-	void(*code_command_to_binary)(char **, char *, char **, SymbolTable*, int, int *);
+	void(*code_command_to_binary)(char **, char *, char **, SymbolTable *, ExternalsUsageList *, int, int *);
 
 	code_command_to_binary = get_command_parsing_function(command);
-	code_command_to_binary(&as_binary, command, line_ptr, symbol_table, ic, err_code);
+	code_command_to_binary(&as_binary, command, line_ptr, symbol_table, externals_usage_list, ic, err_code);
 	if(!as_binary)
 		return;
 

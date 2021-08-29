@@ -1,6 +1,8 @@
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
 
+#include <stdio.h>
+
 struct SymbolNode{
 	char *symbol;
 	int value;
@@ -21,6 +23,7 @@ void increment_data_addresses(SymbolTable *symbol_table, int value_to_add);
 int mark_symbol_as_entry(SymbolTable *symbol_table, char *symbol_name);
 int get_internal_label_value(SymbolTable *symbol_table, char *label_param);
 int get_label_value(SymbolTable *symbol_table, char *label_param);
+int output_symbols_of_attribute(FILE *fp, SymbolTable *symbol_table, char *attribute);
 void free_symbol_table(SymbolTable *symbol_table);
 
 #endif /*SYMBOL_TABLE_H*/

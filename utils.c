@@ -89,15 +89,3 @@ void binary_32_to_bytes(char **result, char *as_binary, int is_little_endian)
 		offset += diff;
 	}
 }
-
-
-void format_output_bytes(char *current_output_bytes, int bytes_count, FILE *fp)
-{
-	int i;
-	for(i = 0; i < bytes_count; i++)
-	{
-		if(i > 0)
-			fputc(' ', fp);
-		fprintf(fp, "%02X", (unsigned char)(current_output_bytes[i]));
-	}
-}

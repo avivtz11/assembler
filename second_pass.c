@@ -3,14 +3,16 @@
 #include <stdlib.h>
 
 #include "symbol_table.h"
+#include "externals_usage_list.h"
 #include "pass_common.h"
 #include "parsers.h"
 #include "utils.h"
+#include "output_utils.h"
 
-char *handle_second_pass_input_line(char *line, SymbolTable *symbol_table, char *data_segment, int *dc, int *ic, int line_num, int *err_flag);
+char *handle_second_pass_input_line(char *line, SymbolTable *symbol_table, ExternalsUsageList *externals_usage_list, char *data_segment, int *dc, int *ic, int line_num, int *err_flag);
 
 
-int second_pass(FILE *assembly_fp, SymbolTable *symbol_table, char *data_segment, FILE *ob_fp)
+int second_pass(FILE *assembly_fp, SymbolTable *symbol_table, ExternalsUsageList *externals_usage_list, char *data_segment, FILE *ob_fp)
 {
 	char line[MAX_LINE];
 	int line_num;
@@ -29,13 +31,10 @@ int second_pass(FILE *assembly_fp, SymbolTable *symbol_table, char *data_segment
 	{
 		if(!is_comment_or_empty(line)) /*not comment or empty*/
 		{
-			current_output_bytes = handle_second_pass_input_line(line, symbol_table, data_segment, &dc, &ic, line_num, &err_flag);
+			current_output_bytes = handle_second_pass_input_line(line, symbol_table, externals_usage_list, data_segment, &dc, &ic, line_num, &err_flag);
 			if(current_output_bytes)/*if error - skips in print (output file deleted anyway)*/
 			{
-				fprintf(ob_fp,"%04d ", byte_location);
-				byte_location += 4;
-				format_output_bytes(current_output_bytes, 4, ob_fp);
-				fputc('\n', ob_fp);
+				print_ob_output_line(ob_fp, &byte_location, current_output_bytes);
 				free(current_output_bytes);
 			}
 		}
@@ -46,7 +45,7 @@ int second_pass(FILE *assembly_fp, SymbolTable *symbol_table, char *data_segment
 }
 
 
-char *handle_second_pass_input_line(char *line, SymbolTable *symbol_table, char *data_segment, int *dc, int *ic, int line_num, int *err_flag)
+char *handle_second_pass_input_line(char *line, SymbolTable *symbol_table, ExternalsUsageList *externals_usage_list, char *data_segment, int *dc, int *ic, int line_num, int *err_flag)
 {
 	char *line_ptr;
 	char *current_word;
@@ -82,7 +81,7 @@ char *handle_second_pass_input_line(char *line, SymbolTable *symbol_table, char 
 
 	else if(!is_extern_def(current_word)) /*extern was taken care of in first pass*/
 	{
-		code_command(&result, current_word, &line_ptr, symbol_table, *ic, &err_code);
+		code_command(&result, current_word, &line_ptr, symbol_table, externals_usage_list, *ic, &err_code);
 		if(!result)
 		{
 			*err_flag = 1;

@@ -153,6 +153,26 @@ void add_attribute(SymbolNode *symbol_node, char *attribute)
 }
 
 
+int output_symbols_of_attribute(FILE *fp, SymbolTable *symbol_table, char *attribute)
+{
+	int outputs;
+	SymbolNode *node;
+	outputs = 0;
+	node = symbol_table->first;
+	while(node)
+	{
+		if(strstr(node->attributes, attribute))
+		{
+			fprintf(fp, "%s ", node->symbol);
+			fprintf(fp, "%04d\n", node->value);
+			outputs = 1;
+		}
+		node = node->next;
+	}
+	return outputs;
+}
+
+
 void make_symbol_node(SymbolNode **result, SymbolNode *next, char *symbol, int value, char *attributes)
 {
 	malloc_with_error((void **)result, sizeof(SymbolNode), "exit! no memory - couldn't allocate symbol structure\n");

@@ -3,6 +3,7 @@
 
 #include "utils.h"
 #include "symbol_table.h"
+#include "externals_usage_list.h"
 
 #define is_in_register_range(X) (((X) >= 0) && ((X) <= 31))
 #define is_in_immed_range(X) (((X) >= -32768) && ((X) <= 32767))
@@ -66,7 +67,7 @@ void read_register_value(long int *register_number, char *register_param, int *e
 }
 
 
-void code_register(char *register_param, char **coded_param, SymbolTable* symbol_table, int ic, int *err_code)
+void code_register(char *register_param, char **coded_param, SymbolTable* symbol_table, ExternalsUsageList *externals_usage_list, int ic, int *err_code)
 {
 	long int register_number;
 
@@ -79,7 +80,7 @@ void code_register(char *register_param, char **coded_param, SymbolTable* symbol
 }
 
 
-void code_immed(char *immed_param, char **coded_param, SymbolTable* symbol_table, int ic, int *err_code)
+void code_immed(char *immed_param, char **coded_param, SymbolTable* symbol_table, ExternalsUsageList *externals_usage_list, int ic, int *err_code)
 {
 	long int immed_value;
 
@@ -100,7 +101,7 @@ void code_immed(char *immed_param, char **coded_param, SymbolTable* symbol_table
 }
 
 
-void code_label_distance(char *label_param, char **coded_param, SymbolTable* symbol_table, int ic, int *err_code)
+void code_label_distance(char *label_param, char **coded_param, SymbolTable* symbol_table, ExternalsUsageList *externals_usage_list, int ic, int *err_code)
 {
 	int label_value;
 	long int immed_value;
@@ -124,7 +125,7 @@ void code_label_distance(char *label_param, char **coded_param, SymbolTable* sym
 }
 
 
-void code_register_or_label_address(char *param, char **coded_param, SymbolTable* symbol_table, int ic, int *err_code)
+void code_register_or_label_address(char *param, char **coded_param, SymbolTable* symbol_table, ExternalsUsageList *externals_usage_list, int ic, int *err_code)
 {
 	long int param_value;
 	malloc_with_error((void **)coded_param, 27, "couldn't allocate memory");/*takes 26 + terminator*/
@@ -152,13 +153,15 @@ void code_register_or_label_address(char *param, char **coded_param, SymbolTable
 			*err_code = 3;
 			return;
 		}
+		if(param_value == 0)
+			add_to_externals_usage_list(externals_usage_list, ic, param);
 	}
 
 	num2bin(param_value, (*coded_param) + 1, 26);
 }
 
 
-void code_label_address(char *param, char **coded_param, SymbolTable* symbol_table, int ic, int *err_code)
+void code_label_address(char *param, char **coded_param, SymbolTable* symbol_table, ExternalsUsageList *externals_usage_list, int ic, int *err_code)
 {
 	long int param_value;
 	malloc_with_error((void **)coded_param, 27, "couldn't allocate memory");/*takes 26 + terminator*/
@@ -175,6 +178,9 @@ void code_label_address(char *param, char **coded_param, SymbolTable* symbol_tab
 		*err_code = 3;
 		return;
 	}
+
+	if(param_value == 0)
+		add_to_externals_usage_list(externals_usage_list, ic, param);
 
 	num2bin(param_value, (*coded_param) + 1, 26);
 }
