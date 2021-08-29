@@ -11,6 +11,7 @@ void code_R_arithmetic_logic_to_binary(char **result, char *command, char **line
 void code_R_copying_to_binary(char **result, char *command, char **line_ptr, SymbolTable *symbol_table, int ic, int *err_code);
 void code_I_arithmetic_logic_to_binary(char **result, char *command, char **line_ptr, SymbolTable *symbol_table, int ic, int *err_code);
 void code_I_branching_to_binary(char **result, char *command, char **line_ptr, SymbolTable *symbol_table, int ic, int *err_code);
+void code_I_load_store_to_binary(char **result, char *command, char **line_ptr, SymbolTable *symbol_table, int ic, int *err_code);
 void handle_param(char **result, char **line_ptr, SymbolTable *symbol_table, int ic, int *err_code, int line_bin_offset, int bin_size, void (*code_param)(char *, char ** ,SymbolTable * ,int ,int *));
 
 
@@ -30,7 +31,35 @@ void(*get_command_parsing_function(char *command))(char **, char *, char **, Sym
 	if((strcmp(command, "beq") == 0) || (strcmp(command, "bne") == 0) || (strcmp(command, "blt") == 0) || (strcmp(command, "bgt") == 0))
 		return code_I_branching_to_binary;
 
+	if((strcmp(command, "sh") == 0) || (strcmp(command, "lh") == 0) || (strcmp(command, "sw") == 0) || (strcmp(command, "lw") == 0) ||
+(strcmp(command, "sb") == 0) || (strcmp(command, "lb") == 0))
+		return code_I_load_store_to_binary;
+
 	return NULL;
+}
+
+
+void code_I_load_store_to_binary(char **result, char *command, char **line_ptr, SymbolTable *symbol_table, int ic, int *err_code)
+{
+	malloc_with_error((void **)result, 4*8 + 1, "couldn't allocate memory");
+
+	code_opcode(result, command);/*opcode*/
+	handle_param(result, line_ptr, symbol_table, ic, err_code, 6, 5, code_register);/*rs*/
+	if(*err_code)
+		return;	
+	handle_param(result, line_ptr, symbol_table, ic, err_code, 16, 16, code_immed);/*immed*/
+	if(*err_code)
+		return;
+	handle_param(result, line_ptr, symbol_table, ic, err_code, 11, 5, code_register);/*rt*/
+	if(*err_code)
+		return;
+
+	if((**line_ptr != '\n') && (**line_ptr != '\0'))
+	{
+		*err_code = 4;
+		return;
+	}
+	(*result)[32] = '\0';
 }
 
 
