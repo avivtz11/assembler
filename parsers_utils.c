@@ -28,7 +28,7 @@ int get_next_param(char **params, char **result_param)
 	}
 
 	result_param_length = (*params) - param_first_char;
-	(*result_param) = (char *) malloc(result_param_length + 1);
+	malloc_with_error((void **)result_param, result_param_length + 1);
 	memcpy(*result_param, param_first_char, result_param_length);
 	(*result_param)[result_param_length] = '\0';
 
@@ -75,7 +75,7 @@ void code_register(char *register_param, char **coded_param, SymbolTable* symbol
 	if(*err_code)
 		return;
 
-	malloc_with_error((void **)coded_param, 6, "couldn't allocate memory");/*register takes 5 + terminator*/
+	malloc_with_error((void **)coded_param, 6);/*register takes 5 + terminator*/
 	num2bin(register_number, *coded_param, 6);
 }
 
@@ -96,7 +96,7 @@ void code_immed(char *immed_param, char **coded_param, SymbolTable* symbol_table
 		return;
 	}
 
-	malloc_with_error((void **)coded_param, 17, "couldn't allocate memory");/*immed takes 16 + terminator*/
+	malloc_with_error((void **)coded_param, 17);/*immed takes 16 + terminator*/
 	num2bin(immed_value, *coded_param, 17);
 }
 
@@ -120,7 +120,7 @@ void code_label_distance(char *label_param, char **coded_param, SymbolTable* sym
 		return;
 	}
 
-	malloc_with_error((void **)coded_param, 17, "couldn't allocate memory");/*immed takes 16 + terminator*/
+	malloc_with_error((void **)coded_param, 17);/*immed takes 16 + terminator*/
 	num2bin(immed_value, *coded_param, 17);
 }
 
@@ -128,7 +128,7 @@ void code_label_distance(char *label_param, char **coded_param, SymbolTable* sym
 void code_register_or_label_address(char *param, char **coded_param, SymbolTable* symbol_table, ExternalsUsageList *externals_usage_list, int ic, int *err_code)
 {
 	long int param_value;
-	malloc_with_error((void **)coded_param, 27, "couldn't allocate memory");/*takes 26 + terminator*/
+	malloc_with_error((void **)coded_param, 27);/*takes 26 + terminator*/
 	if((*param) == '$')
 	{
 		**coded_param = '1';/*reg*/
@@ -164,7 +164,7 @@ void code_register_or_label_address(char *param, char **coded_param, SymbolTable
 void code_label_address(char *param, char **coded_param, SymbolTable* symbol_table, ExternalsUsageList *externals_usage_list, int ic, int *err_code)
 {
 	long int param_value;
-	malloc_with_error((void **)coded_param, 27, "couldn't allocate memory");/*takes 26 + terminator*/
+	malloc_with_error((void **)coded_param, 27);/*takes 26 + terminator*/
 	**coded_param = '0';/*reg*/
 
 	param_value = get_label_value(symbol_table, param);/*if external - zero*/

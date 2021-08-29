@@ -5,12 +5,12 @@
 #include "utils.h"
 
 
-void malloc_with_error(void **destination, int allocation_size, char *error_message)
+void malloc_with_error(void **destination, int allocation_size)
 {
 	if (!(*destination = malloc(allocation_size)))
 	{
-		fprintf(stderr, "%s", error_message);
-		exit(1); /*TODO maybe not exit straight away for sake of cleanup*/
+		fprintf(stderr, "%s", "out of memory! - exiting program immediately");
+		exit(1); /*if out of memory must exit immediately - can't continue operating*/
 	}
 }
 
@@ -38,14 +38,14 @@ void change_path_extension(char **result, char *file_path, char *new_extension)
 		path_pointer++;
 	}
 
-	malloc_with_error((void **)result, extension_start - file_path + strlen(new_extension) + 1, "couldn't allocate memory");
+	malloc_with_error((void **)result, extension_start - file_path + strlen(new_extension) + 1);
 	(*result)[extension_start - file_path + strlen(new_extension)] = '\0';
 	memcpy(*result, file_path, extension_start - file_path);
 	memcpy((*result) + (extension_start - file_path), new_extension, strlen(new_extension));
 }
 
 
-void num2bin(long int num, char *result_buffer, int result_buffer_size)/*TODO make sure 2's complement*/
+void num2bin(long int num, char *result_buffer, int result_buffer_size)
 {
 	int i;
 	char *temp;
@@ -70,9 +70,9 @@ void binary_32_to_bytes(char **result, char *as_binary, int is_little_endian)
 	int diff;
 	int i;
 
-	malloc_with_error((void **)result, 4, "couldn't allocate memory");
+	malloc_with_error((void **)result, 4);
 
-	malloc_with_error((void **)&binary_byte, 9, "couldn't allocate memory");
+	malloc_with_error((void **)&binary_byte, 9);
 	*(binary_byte + 8) = '\0';
 
 	offset = 0;

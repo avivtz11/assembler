@@ -47,7 +47,7 @@ void code_data_to_dc(char *data_command, char **params, char *data_segment, int 
 		current_param_iterator = current_param;
 		current_param_iterator++; /*skipping first " */
 
-		data_bytes_temp = (char *)malloc(strlen(current_param) - 2 + 1); /*removing 2 for the 2 ", adding 1 for terminator */
+		malloc_with_error((void **)&data_bytes_temp, strlen(current_param) - 2 + 1); /*removing 2 for the 2 ", adding 1 for terminator */
 		counter = 0;
 		while((*current_param_iterator) != '"')
 		{
@@ -106,7 +106,7 @@ int split_number_to_bytes(char **result, long int value, int is_little_endian, c
 		diff = -1;
 	}
 
-	*result = (char *)malloc(size);
+	malloc_with_error((void **)result, size);
 
 	while(counter < size)
 	{
@@ -142,7 +142,7 @@ int count_data_length(char *data_command, char **params)
 		}
 
 		current_param_iterator = current_param;
-		current_param_value = strtol(current_param, &current_param_iterator, 10); /*TODO probably needs to change*/
+		current_param_value = strtol(current_param, &current_param_iterator, 10); /*long int so no sign problem*/
 		if(*current_param_iterator)
 		{
 			free(current_param);

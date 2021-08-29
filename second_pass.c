@@ -27,7 +27,7 @@ int second_pass(FILE *assembly_fp, SymbolTable *symbol_table, ExternalsUsageList
 	line_num = 1;
 	err_flag = 0;
 	byte_location = 100;
-	while(fgets(line, sizeof(line), assembly_fp)) /*TODO maybe error if more than MAX_LINE?*/
+	while(fgets(line, sizeof(line), assembly_fp)) /*won't be longer than MAX_LINE - checked in first_pass*/
 	{
 		if(!is_comment_or_empty(line)) /*not comment or empty*/
 		{

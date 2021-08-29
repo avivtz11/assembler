@@ -25,7 +25,7 @@ int first_pass(FILE *assembly_fp, SymbolTable *symbol_table, int *ic_ref, int *d
 
 	line_num = 1;
 	err_flag = 0;
-	while(fgets(line, sizeof(line), assembly_fp)) /*TODO maybe error if more than MAX_LINE?*/
+	while(fgets(line, sizeof(line), assembly_fp))
 	{
 		if(!is_comment_or_empty(line)) /*not comment or empty*/
 		{

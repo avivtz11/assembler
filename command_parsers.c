@@ -59,7 +59,7 @@ void(*get_command_parsing_function(char *command))(char **, char *, char **, Sym
 void code_J_stop_to_binary(char **result, char *command, char **line_ptr, SymbolTable *symbol_table, ExternalsUsageList *externals_usage_list, int ic, int *err_code)
 {
 	int i;
-	malloc_with_error((void **)result, 4*8 + 1, "couldn't allocate memory");
+	malloc_with_error((void **)result, 4*8 + 1);
 
 	code_opcode(result, command);/*opcode*/
 	for(i = 6; i < 32; i++)
@@ -70,7 +70,7 @@ void code_J_stop_to_binary(char **result, char *command, char **line_ptr, Symbol
 
 void code_J_call_to_binary(char **result, char *command, char **line_ptr, SymbolTable *symbol_table, ExternalsUsageList *externals_usage_list, int ic, int *err_code)
 {
-	malloc_with_error((void **)result, 4*8 + 1, "couldn't allocate memory");
+	malloc_with_error((void **)result, 4*8 + 1);
 
 	code_opcode(result, command);/*opcode*/
 
@@ -89,7 +89,7 @@ void code_J_call_to_binary(char **result, char *command, char **line_ptr, Symbol
 
 void code_J_la_to_binary(char **result, char *command, char **line_ptr, SymbolTable *symbol_table, ExternalsUsageList *externals_usage_list, int ic, int *err_code)
 {	
-	malloc_with_error((void **)result, 4*8 + 1, "couldn't allocate memory");
+	malloc_with_error((void **)result, 4*8 + 1);
 
 	code_opcode(result, command);/*opcode*/
 
@@ -108,7 +108,7 @@ void code_J_la_to_binary(char **result, char *command, char **line_ptr, SymbolTa
 
 void code_J_jmp_to_binary(char **result, char *command, char **line_ptr, SymbolTable *symbol_table, ExternalsUsageList *externals_usage_list, int ic, int *err_code)
 {
-	malloc_with_error((void **)result, 4*8 + 1, "couldn't allocate memory");
+	malloc_with_error((void **)result, 4*8 + 1);
 
 	code_opcode(result, command);/*opcode*/
 
@@ -127,7 +127,7 @@ void code_J_jmp_to_binary(char **result, char *command, char **line_ptr, SymbolT
 
 void code_I_load_store_to_binary(char **result, char *command, char **line_ptr, SymbolTable *symbol_table, ExternalsUsageList *externals_usage_list, int ic, int *err_code)
 {
-	malloc_with_error((void **)result, 4*8 + 1, "couldn't allocate memory");
+	malloc_with_error((void **)result, 4*8 + 1);
 
 	code_opcode(result, command);/*opcode*/
 	handle_param(result, line_ptr, symbol_table, externals_usage_list, ic, err_code, 6, 5, code_register);/*rs*/
@@ -151,7 +151,7 @@ void code_I_load_store_to_binary(char **result, char *command, char **line_ptr, 
 
 void code_I_branching_to_binary(char **result, char *command, char **line_ptr, SymbolTable *symbol_table, ExternalsUsageList *externals_usage_list, int ic, int *err_code)
 {
-	malloc_with_error((void **)result, 4*8 + 1, "couldn't allocate memory");
+	malloc_with_error((void **)result, 4*8 + 1);
 
 	code_opcode(result, command);/*opcode*/
 	handle_param(result, line_ptr, symbol_table, externals_usage_list, ic, err_code, 6, 5, code_register);/*rs*/
@@ -174,7 +174,7 @@ void code_I_branching_to_binary(char **result, char *command, char **line_ptr, S
 
 void code_I_arithmetic_logic_to_binary(char **result, char *command, char **line_ptr, SymbolTable *symbol_table, ExternalsUsageList *externals_usage_list, int ic, int *err_code)
 {
-	malloc_with_error((void **)result, 4*8 + 1, "couldn't allocate memory");
+	malloc_with_error((void **)result, 4*8 + 1);
 
 	code_opcode(result, command);/*opcode*/
 	handle_param(result, line_ptr, symbol_table, externals_usage_list, ic, err_code, 6, 5, code_register);/*rs*/
@@ -198,7 +198,7 @@ void code_I_arithmetic_logic_to_binary(char **result, char *command, char **line
 
 void code_R_copying_to_binary(char **result, char *command, char **line_ptr, SymbolTable *symbol_table, ExternalsUsageList *externals_usage_list, int ic, int *err_code)
 {
-	malloc_with_error((void **)result, 4*8 + 1, "couldn't allocate memory");
+	malloc_with_error((void **)result, 4*8 + 1);
 
 	code_opcode(result, command);/*opcode*/
 	handle_param(result, line_ptr, symbol_table, externals_usage_list, ic, err_code, 6, 5, code_register);/*rs*/
@@ -224,7 +224,7 @@ void code_R_copying_to_binary(char **result, char *command, char **line_ptr, Sym
 
 void code_R_arithmetic_logic_to_binary(char **result, char *command, char **line_ptr, SymbolTable *symbol_table, ExternalsUsageList *externals_usage_list, int ic, int *err_code)
 {
-	malloc_with_error((void **)result, 4*8 + 1, "couldn't allocate memory");
+	malloc_with_error((void **)result, 4*8 + 1);
 
 	code_opcode(result, command);/*opcode*/
 	handle_param(result, line_ptr, symbol_table, externals_usage_list, ic, err_code, 6, 5, code_register);/*rs*/

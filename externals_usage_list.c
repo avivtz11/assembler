@@ -10,7 +10,7 @@ void make_external_usage_node(ExternalsUsageNode **result, ExternalsUsageNode *n
 
 void make_externals_usage_list(ExternalsUsageList **result)
 {
-	malloc_with_error((void **)result, sizeof(ExternalsUsageList), "exit! no memory - couldn't allocate symbol table\n");
+	malloc_with_error((void **)result, sizeof(ExternalsUsageList));
 	
 	(*result) -> first = NULL;
 }
@@ -58,11 +58,11 @@ void add_to_externals_usage_list(ExternalsUsageList *externals_usage_list, int i
 
 void make_external_usage_node(ExternalsUsageNode **result, ExternalsUsageNode *next, int ic, char *symbol)
 {
-	malloc_with_error((void **)result, sizeof(ExternalsUsageNode), "exit! no memory - couldn't allocate symbol structure\n");
+	malloc_with_error((void **)result, sizeof(ExternalsUsageNode));
 	
 	(*result)->next = next;
 	(*result)->usage_address = ic;
 
-	malloc_with_error((void **)&((*result)->symbol), sizeof(strlen(symbol) + 1), "exit! no memory - couldn't allocate symbol string\n");
+	malloc_with_error((void **)&((*result)->symbol), sizeof(strlen(symbol) + 1));
 	strcpy((*result)->symbol, symbol);
 }

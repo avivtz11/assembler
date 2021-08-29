@@ -12,7 +12,7 @@ void add_attribute(SymbolNode *symbol_node, char *attribute);
 
 void make_symbol_table(SymbolTable **result)
 {
-	malloc_with_error((void **)result, sizeof(SymbolTable), "exit! no memory - couldn't allocate symbol table\n");
+	malloc_with_error((void **)result, sizeof(SymbolTable));
 	
 	(*result) -> first = NULL;
 }
@@ -175,15 +175,15 @@ int output_symbols_of_attribute(FILE *fp, SymbolTable *symbol_table, char *attri
 
 void make_symbol_node(SymbolNode **result, SymbolNode *next, char *symbol, int value, char *attributes)
 {
-	malloc_with_error((void **)result, sizeof(SymbolNode), "exit! no memory - couldn't allocate symbol structure\n");
+	malloc_with_error((void **)result, sizeof(SymbolNode));
 	
 	(*result)->next = next;
 	(*result)->value = value;
 
-	malloc_with_error((void **)&((*result)->symbol), sizeof(strlen(symbol) + 1), "exit! no memory - couldn't allocate symbol string\n");
+	malloc_with_error((void **)&((*result)->symbol), sizeof(strlen(symbol) + 1));
 	strcpy((*result)->symbol, symbol);
 
-	malloc_with_error((void **)&((*result)->attributes), sizeof(strlen(attributes) + 1), "exit! no memory - couldn't allocate symbol attributes\n");
+	malloc_with_error((void **)&((*result)->attributes), sizeof(strlen(attributes) + 1));
 	strcpy((*result)->attributes, attributes);
 }
 
