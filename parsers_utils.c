@@ -33,6 +33,9 @@ int get_next_param(char **params, char **result_param)
 
 	skip_white_space(params);
 
+	if((**params) == '\0')
+		return 0;
+
 	if((**params) != ',' && (**params) != '\n')
 		return -2;
 
@@ -155,7 +158,7 @@ void code_register_or_label_address(char *param, char **coded_param, SymbolTable
 }
 
 
-void code_register_address(char *param, char **coded_param, SymbolTable* symbol_table, int ic, int *err_code)
+void code_label_address(char *param, char **coded_param, SymbolTable* symbol_table, int ic, int *err_code)
 {
 	long int param_value;
 	malloc_with_error((void **)coded_param, 27, "couldn't allocate memory");/*takes 26 + terminator*/

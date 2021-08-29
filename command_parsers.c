@@ -61,7 +61,7 @@ void code_J_stop_to_binary(char **result, char *command, char **line_ptr, Symbol
 	malloc_with_error((void **)result, 4*8 + 1, "couldn't allocate memory");
 
 	code_opcode(result, command);/*opcode*/
-	for(i = 0; i < 32; i++)
+	for(i = 6; i < 32; i++)
 		(*result)[i] = '0';
 	(*result)[32] = '\0';
 }
@@ -73,7 +73,7 @@ void code_J_call_to_binary(char **result, char *command, char **line_ptr, Symbol
 
 	code_opcode(result, command);/*opcode*/
 
-	handle_param(result, line_ptr, symbol_table, ic, err_code, 6, 26, code_register_address);/*reg + address*/
+	handle_param(result, line_ptr, symbol_table, ic, err_code, 6, 26, code_label_address);/*reg + address*/
 	if(*err_code)
 		return;
 
@@ -92,7 +92,7 @@ void code_J_la_to_binary(char **result, char *command, char **line_ptr, SymbolTa
 
 	code_opcode(result, command);/*opcode*/
 
-	handle_param(result, line_ptr, symbol_table, ic, err_code, 6, 26, code_register_address);/*reg + address*/
+	handle_param(result, line_ptr, symbol_table, ic, err_code, 6, 26, code_label_address);/*reg + address*/
 	if(*err_code)
 		return;
 
@@ -326,6 +326,6 @@ void code_opcode(char **result, char *command)
 	else if(strcmp(command, "call") == 0)
 		memcpy(*result, "100000", 7);/*32*/
 	else if(strcmp(command, "stop") == 0)
-		memcpy(*result, "110011", 7);/*63*/
+		memcpy(*result, "111111", 7);/*63*/
 	/*at this point it can't be anything else (get_command_parsing_function validated it)*/
 }

@@ -111,25 +111,25 @@ void data_line_error(int err_code, int line_num)
 	switch(err_code)
 	{
 		case -1:
-			err_message = "line %d: redundant comma between params";
+			err_message = "line %d: redundant comma between params\n";
 			break;
 		case -2:
-			err_message = "line %d: missing comma between params";
+			err_message = "line %d: missing comma between params\n";
 			break;
 		case -3:
-			err_message = "line %d: data param is not a valid number";
+			err_message = "line %d: data param is not a valid number\n";
 			break;
 		case -4:
-			err_message = "line %d: data param is not of valid size";
+			err_message = "line %d: data param is not of valid size\n";
 			break;
 		case -5:
-			err_message = "line %d: asciz only gets one param";
+			err_message = "line %d: asciz only gets one param\n";
 			break;
 		case -6:
-			err_message = "line %d: string param in asciz must have \"";
+			err_message = "line %d: string param in asciz must have \"\n";
 			break;
 		default:
-			err_message = "line %d: unknown error";
+			err_message = "line %d: unknown error\n";
 	}
 	printf(err_message, line_num);
 }

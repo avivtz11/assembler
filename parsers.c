@@ -12,7 +12,7 @@
 int get_next_param(char **params, char **result_param);
 int size_of_single_number(char *data_command);
 int count_asciz_data_length(char **params);
-void split_number_to_bytes_with_terminator(char **result, long int value, int is_little_endian, char *data_command);
+int split_number_to_bytes(char **result, long int value, int is_little_endian, char *data_command);
 
 
 void code_command(char **result, char *command, char **line_ptr, SymbolTable* symbol_table, int ic, int *err_code)
@@ -39,6 +39,7 @@ void code_data_to_dc(char *data_command, char **params, char *data_segment, int 
 	long int current_param_value;
 	char *data_bytes_temp;
 	int counter;
+	int current_number_size;
 
 	if(strcmp(data_command, ".asciz") == 0)
 	{
@@ -46,30 +47,33 @@ void code_data_to_dc(char *data_command, char **params, char *data_segment, int 
 		current_param_iterator = current_param;
 		current_param_iterator++; /*skipping first " */
 
-		data_bytes_temp = (char *)malloc(strlen(current_param - 2 + 1)); /*removing 2 for the 2 ", adding 1 for terminator */
+		data_bytes_temp = (char *)malloc(strlen(current_param) - 2 + 1); /*removing 2 for the 2 ", adding 1 for terminator */
 		counter = 0;
 		while((*current_param_iterator) != '"')
 		{
 			*(data_bytes_temp + counter) = *current_param_iterator;
 			counter++;
+			current_param_iterator++;
 		}
 		*(data_bytes_temp + counter) = '\0'; /*marking end of data*/
-		copy_char_array(data_bytes_temp, data_segment, dc);
+		memcpy(data_segment + *dc, data_bytes_temp, counter + 1);
+		(*dc) += counter+1;
 
 		free(data_bytes_temp);
 		free(current_param);
 		return;
 	}
 
-	while((**params) != '\n')
+	while((**params) != '\0')
 	{
 		get_next_param(params, &current_param);
 
 		current_param_iterator = current_param;
 		current_param_value = atoi(current_param);
 
-		split_number_to_bytes_with_terminator(&data_bytes_temp, current_param_value, 1, data_command);
-		copy_char_array(data_bytes_temp, data_segment, dc); /*TODO fix this! can't be \0 terminator!*/
+		current_number_size = split_number_to_bytes(&data_bytes_temp, current_param_value, 1, data_command);
+		memcpy(data_segment + *dc, data_bytes_temp, current_number_size);
+		(*dc) += current_number_size;
 
 		free(data_bytes_temp);
 		free(current_param);
@@ -77,7 +81,7 @@ void code_data_to_dc(char *data_command, char **params, char *data_segment, int 
 }
 
 
-void split_number_to_bytes_with_terminator(char **result, long int value, int is_little_endian, char *data_command)
+int split_number_to_bytes(char **result, long int value, int is_little_endian, char *data_command)
 {
 	int size;
 	int diff;
@@ -102,8 +106,7 @@ void split_number_to_bytes_with_terminator(char **result, long int value, int is
 		diff = -1;
 	}
 
-	*result = (char *)malloc(size + 1);
-	*(*result + size) = '\0';
+	*result = (char *)malloc(size);
 
 	while(counter < size)
 	{
@@ -113,6 +116,7 @@ void split_number_to_bytes_with_terminator(char **result, long int value, int is
 		position += diff;
 		counter++;
 	}
+	return size;
 }
 
 
@@ -128,7 +132,7 @@ int count_data_length(char *data_command, char **params)
 		return count_asciz_data_length(params);
 
 	params_counter = 0;
-	while((**params) != '\n')
+	while((**params) != '\0')
 	{
 		param_err_code = get_next_param(params, &current_param);
 		if(param_err_code != 0)
@@ -170,14 +174,14 @@ int count_asciz_data_length(char **params)
 	if(param_err_code != 0)
 		result = param_err_code;
 
-	else if((**params) != '\n')
+	else if((**params) != '\0')
 		result = -5;
 
 	else if(((*current_param) != '"') || ((*(current_param + strlen(current_param) - 1)) != '"'))
 		result = -6;
 
 	else
-		result = strlen(current_param) + 1;
+		result = strlen(current_param) - 2 + 1;/*removing 2 for the " */
 
 	free(current_param);
 	return result;

@@ -1,6 +1,6 @@
 ;file test1.as
 ;sample source code
-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
 .entry  Next
 .extern wNumber
 STR:    .asciz "aBcd"
@@ -20,5 +20,5 @@ LIST:   .db    6,-9
 .extern val1
         .dh    27056
 K:      .dw    31,-12
-END     stop
+END:     stop
 .entry  K

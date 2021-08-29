@@ -80,7 +80,8 @@ void assembler(char *assembly_file_path)
 		perror(assembly_file_path);
 		return;
 	}
-	
+
+	fprintf(ob_fp, "%4c %02d %02d\n", ' ', ic-100, dc);
 	pass_err_flag = second_pass(assembly_fp, symbol_table, data_segment, ob_fp);
 	free(data_segment);
 	free_symbol_table(symbol_table);
@@ -94,7 +95,7 @@ void assembler(char *assembly_file_path)
 
 void second_pass_prep(SymbolTable *symbol_table, char **data_segment, int ic, int dc)
 {
-	increment_data_addresses(symbol_table, ic + 100);
+	increment_data_addresses(symbol_table, ic);
 	malloc_with_error((void **)data_segment, dc, "failed to allocate memory for data segment");
 }
 

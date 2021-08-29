@@ -53,6 +53,7 @@ char *handle_second_pass_input_line(char *line, SymbolTable *symbol_table, char 
 	int err_code;
 	char *result;
 
+	result = NULL;
 	line_ptr = line;
 	get_next_word(&current_word, &line_ptr);
 
